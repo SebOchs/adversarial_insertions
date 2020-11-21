@@ -15,7 +15,7 @@ trainer = pl.Trainer(
     distributed_backend='ddp',
     max_epochs=8,
     checkpoint_callback=checkpoint_callback,
-    accumulate_grad_batches=16
+    accumulate_grad_batches=2
 )
 
 trainer.fit(test)
