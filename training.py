@@ -13,7 +13,7 @@ trainer = pl.Trainer(
     gpus=2,
     num_nodes=1,
     distributed_backend='ddp',
-    max_epochs=16,
+    max_epochs=8,
     checkpoint_callback=checkpoint_callback,
     accumulate_grad_batches=8
 )
