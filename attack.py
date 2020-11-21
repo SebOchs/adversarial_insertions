@@ -31,7 +31,7 @@ def decode(token_list, tokenizer):
     return ans_list[0].lstrip().rstrip(), ans_list[1].lstrip().rstrip()
 
 
-checkpoint = LitBERT.load_from_checkpoint("models/bert_epoch=2-val_macro=0.7604.ckpt")
+checkpoint = LitBERT.load_from_checkpoint("models/bert_epoch=3-val_macro=0.7608.ckpt")
 model = checkpoint.model
 model.eval()
 tokenizer = checkpoint.tokenizer
