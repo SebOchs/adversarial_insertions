@@ -15,12 +15,13 @@ class LitBERT(pl.LightningModule):
 
     def __init__(self):
         super(LitBERT, self).__init__()
-
         self.model = BertForSequenceClassification.from_pretrained('bert-base-uncased', num_labels=3)
         self.tokenizer = BertTokenizer.from_pretrained('bert-base-uncased', config=config)
-        self.train_data, self.val_data = random_split(dl.SemEvalDataset("datasets/preprocessed/bert_sciEntsBank_train.npy"),
-                                                      [4472, 497], generator=torch.Generator().manual_seed(42))
-        self.test_data = dl.SemEvalDataset("datasets/preprocessed/bert_sciEntsBank_test_ua.npy")
+        self.train_data, self.val_data = random_split(
+            dl.SemEvalDataset('datasets/preprocessed/bert/sciEntsBank/train.npy'),
+            [4472, 497], generator=torch.Generator().manual_seed(42))
+
+        self.test_data = dl.SemEvalDataset("datasets/preprocessed/bert/sciEntsBank/test_ua.npy")
 
     def forward(self, tok_seq):
         return self.model(input_ids=tok_seq[0], token_type_ids=tok_seq[1], attention_mask=tok_seq[2], labels=tok_seq[3])

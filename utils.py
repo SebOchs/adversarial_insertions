@@ -65,3 +65,23 @@ def weighted_f1(predictions, truth):
     f1_1 = f1(predictions, truth, 1)
     f1_2 = f1(predictions, truth, 2)
     return (weight_0 * f1_0 + weight_1 * f1_1 + weight_2 * f1_2) / len(truth)
+
+
+def decode(token_list, tokenizer, mode='torch'):
+    """
+    translates a list of tokens including two sentences/sequences into a readable string
+    :param mode: flag for determining how to handle type of token list
+    :param token_list: list of wordpiece tokens /
+    :param tokenizer: huggingface tokenizer
+    :return: string sequence 1, string sequence 2
+    """
+    if mode == 'torch':
+        decoded = tokenizer.decode(token_list.squeeze().tolist())
+    elif mode == 'list':
+        decoded = tokenizer.decode(token_list.input_ids)
+    # Clean-up
+    x = decoded.replace(tokenizer.cls_token, '')
+    ans_list = x.split(tokenizer.sep_token, 1)
+    ans_list[1] = ans_list[1].replace(tokenizer.sep_token, '')
+    ans_list[1] = ans_list[1].replace(tokenizer.pad_token, '')
+    return ans_list[0].lstrip().rstrip(), ans_list[1].lstrip().rstrip()
