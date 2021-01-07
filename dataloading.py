@@ -4,7 +4,7 @@ from torch.utils.data import Dataset
 
 
 # data loader for a given data set
-class SemEvalDataset(Dataset):
+class MyDataset(Dataset):
 
     def __init__(self, filename):
         self.data = np.load(filename, allow_pickle=True)

@@ -1,6 +1,6 @@
 import torch
 import numpy as np
-from lit_BERT import LitBERT
+from lit_BERT import LitSEBBERT
 import spacy
 import time
 import utils
@@ -27,7 +27,7 @@ def predict(x):
 
 
 # Load checkpoint and get necessary objects
-checkpoint = LitBERT.load_from_checkpoint("models/seb_bert_epoch=4-val_macro=0.7680.ckpt")
+checkpoint = LitSEBBERT.load_from_checkpoint("models/seb_bert_epoch=4-val_macro=0.7680.ckpt")
 model = checkpoint.model
 model.cuda()
 model.eval()

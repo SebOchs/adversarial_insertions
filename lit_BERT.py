@@ -6,22 +6,23 @@ from transformers import BertForSequenceClassification, AdamW, BertTokenizer, Be
 from utils import macro_f1, weighted_f1
 import dataloading as dl
 import warnings
+from sklearn.metrics import f1_score as f1_score
 
 warnings.filterwarnings("ignore")
 config = BertConfig('bert-base-uncased', max_position_embeddings=128)
 
 
-class LitBERT(pl.LightningModule):
+class LitSEBBERT(pl.LightningModule):
 
     def __init__(self):
-        super(LitBERT, self).__init__()
+        super(LitSEBBERT, self).__init__()
         self.model = BertForSequenceClassification.from_pretrained('bert-base-uncased', num_labels=3)
         self.tokenizer = BertTokenizer.from_pretrained('bert-base-uncased', config=config)
         self.train_data, self.val_data = random_split(
-            dl.SemEvalDataset('datasets/preprocessed/bert/sciEntsBank/train.npy'),
+            dl.MyDataset('datasets/preprocessed/bert/sciEntsBank/train.npy'),
             [4472, 497], generator=torch.Generator().manual_seed(42))
 
-        self.test_data = dl.SemEvalDataset("datasets/preprocessed/bert/sciEntsBank/test_ua.npy")
+        self.test_data = dl.MyDataset("datasets/preprocessed/bert/sciEntsBank/test_ua.npy")
 
     def forward(self, tok_seq):
         return self.model(input_ids=tok_seq[0], token_type_ids=tok_seq[1], attention_mask=tok_seq[2], labels=tok_seq[3])
@@ -68,14 +69,16 @@ class LitBERT(pl.LightningModule):
         return AdamW(self.model.parameters(), lr=0.00002, correct_bias=False)
 
     def train_dataloader(self):
-        train_sampler = RandomSampler(self.train_data)
-        return DataLoader(self.train_data, batch_size=32, num_workers=0, sampler=train_sampler)
+        return DataLoader(self.train_data, batch_size=32, num_workers=0, shuffle=True)
 
     def val_dataloader(self):
         """
         val_sampler = RandomSampler(self.val_data)
         """
-        return DataLoader(self.val_data, batch_size=1, num_workers=0, shuffle=False, sampler=None)
+        return DataLoader(self.val_data, batch_size=1, num_workers=0, shuffle=False)
 
     def test_dataloader(self):
-        return DataLoader(self.test_data, batch_size=1, num_workers=0, shuffle=False, sampler=None)
+        return DataLoader(self.test_data, batch_size=1, num_workers=0, shuffle=False)
+
+
+
