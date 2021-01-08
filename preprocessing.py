@@ -42,11 +42,12 @@ def preprocess_seb(file_path, where_to_save, model):
                                   tokenized.attention_mask[:128],
                                   label])
                 if model == 'T5':
-                    label = tokenizer(stud_answer.get('accuracy'), max_length=128, padding='max_length').input_ids
-                    tokenized = tokenizer("asag: " + text_ref + tokenizer.eos_token + text_stud, max_length=128,
-                                          padding='max_length')
-                    array.append([tokenized.input_ids[:128],
-                                  label])
+                    label = tokenizer(stud_answer.get('accuracy'), max_length=4, padding='max_length')
+
+                    tokenized = tokenizer("asag: reference:" + text_ref + tokenizer.eos_token + " student: " +
+                                          text_stud, max_length=128, padding='max_length')
+                    array.append([tokenized.input_ids[:128], tokenized.attention_mask[:128], label.input_ids,
+                                  label.attention_mask])
 
     save(where_to_save, array)
 
@@ -164,20 +165,20 @@ def preprocess_wic(file_path, where_to_save, model):
 
     save(where_to_save, array)
 
-"""
+
 # preprocess seb for bert
-preprocess_seb('datasets/raw/sciEntsBank_training', 'datasets/preprocessed/bert/seb/train', 'bert')
-preprocess_seb('datasets/raw/sciEntsBank_testing/test-unseen-answers', 'datasets/preprocessed/bert/seb/test_ua', 'bert')
-preprocess_seb('datasets/raw/sciEntsBank_testing/test-unseen-domains', 'datasets/preprocessed/bert/seb/test_ud', 'bert')
-preprocess_seb('datasets/raw/sciEntsBank_testing/test-unseen-questions', 'datasets/preprocessed/bert/seb/test_uq',
-               'bert')
+# preprocess_seb('datasets/raw/sciEntsBank_training', 'datasets/preprocessed/bert/seb/train', 'bert')
+# preprocess_seb('datasets/raw/sciEntsBank_testing/test-unseen-answers', 'datasets/preprocessed/bert/seb/test_ua', 'bert')
+# preprocess_seb('datasets/raw/sciEntsBank_testing/test-unseen-domains', 'datasets/preprocessed/bert/seb/test_ud', 'bert')
+# preprocess_seb('datasets/raw/sciEntsBank_testing/test-unseen-questions', 'datasets/preprocessed/bert/seb/test_uq',
+#                'bert')
 
 # preprocess seb for T5
 preprocess_seb('datasets/raw/sciEntsBank_training', 'datasets/preprocessed/T5/seb/train', 'T5')
 preprocess_seb('datasets/raw/sciEntsBank_testing/test-unseen-answers', 'datasets/preprocessed/T5/seb/test_ua', 'T5')
 preprocess_seb('datasets/raw/sciEntsBank_testing/test-unseen-domains', 'datasets/preprocessed/T5/seb/test_ud', 'T5')
 preprocess_seb('datasets/raw/sciEntsBank_testing/test-unseen-questions', 'datasets/preprocessed/T5/seb/test_uq', 'T5')
-
+"""
 # preprocess mnli for bert
 preprocess_mnli('datasets/raw/MNLI_matched/original/multinli_1.0_train.jsonl', 'datasets/preprocessed/bert/MNLI/train',
                 'bert')
@@ -209,7 +210,7 @@ preprocess_QQP('datasets/raw/QQP/dev.tsv', 'datasets/preprocessed/bert/qqp/dev',
 # preprocess qqp for T5
 preprocess_QQP('datasets/raw/QQP/train.tsv', 'datasets/preprocessed/T5/qqp/train', 'T5')
 preprocess_QQP('datasets/raw/QQP/dev.tsv', 'datasets/preprocessed/T5/qqp/dev', 'T5')
-"""
+
 # preprocess RTE for bert
 preprocess_RTE('datasets/raw/RTE/train.tsv', 'datasets/preprocessed/bert/RTE/train', 'bert')
 preprocess_RTE('datasets/raw/RTE/dev.tsv', 'datasets/preprocessed/bert/RTE/dev', 'bert')
@@ -225,3 +226,4 @@ preprocess_wic('datasets/raw/WiC/val.jsonl', 'datasets/preprocessed/bert/wic/dev
 # preprocess WiC for T5
 preprocess_wic('datasets/raw/WiC/train.jsonl', 'datasets/preprocessed/T5/wic/train', 'T5')
 preprocess_wic('datasets/raw/WiC/val.jsonl', 'datasets/preprocessed/T5/wic/dev', 'T5')
+"""

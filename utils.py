@@ -40,14 +40,9 @@ def macro_f1(predictions, truth):
     :param truth: list of actual values
     :return: macro f1 between model predictions and actual values
     """
+    different_f1s = [f1(predictions, truth, lab) for lab in set(truth)]
+    return sum(different_f1s) / len(different_f1s)
 
-    f1_0 = f1(predictions, truth, 0)
-    f1_1 = f1(predictions, truth, 1)
-    f1_2 = f1(predictions, truth, 2)
-    if np.sum([x == 1 for x in truth]) == 0:
-        return (f1_0 + f1_2) / 2
-    else:
-        return (f1_0 + f1_1 + f1_2) / 3
 
 
 def weighted_f1(predictions, truth):
@@ -57,14 +52,9 @@ def weighted_f1(predictions, truth):
     :param truth: list of actual values
     :return: weighted f1 between model predictions and actual values
     """
-
-    weight_0 = np.sum([x == 0 for x in truth])
-    weight_1 = np.sum([x == 1 for x in truth])
-    weight_2 = np.sum([x == 2 for x in truth])
-    f1_0 = f1(predictions, truth, 0)
-    f1_1 = f1(predictions, truth, 1)
-    f1_2 = f1(predictions, truth, 2)
-    return (weight_0 * f1_0 + weight_1 * f1_1 + weight_2 * f1_2) / len(truth)
+    different_f1s = [f1(predictions, truth, lab) for lab in set(truth)]
+    different_weights = [np.sum([x == lab for x in truth]) for lab in set(truth)]
+    return sum(x*y for x, y in zip(different_f1s, different_weights)) / len(predictions)
 
 
 def decode(token_list, tokenizer, mode='torch'):
