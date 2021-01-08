@@ -10,9 +10,9 @@ checkpoint_callback = ModelCheckpoint(
 )
 test = LitT5("datasets/preprocessed/T5/seb/train.npy", "datasets/preprocessed/T5/seb/test_ua.npy")
 trainer = pl.Trainer(
-    gpus=1,
-    # num_nodes=1,
-    # distributed_backend='ddp',
+    gpus=4,
+    num_nodes=1,
+    distributed_backend='ddp',
     max_epochs=8,
     checkpoint_callback=checkpoint_callback,
     accumulate_grad_batches=4,
