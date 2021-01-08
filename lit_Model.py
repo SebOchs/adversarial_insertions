@@ -151,7 +151,7 @@ class LitT5(pl.LightningModule):
         return Adafactor(self.model.parameters(), lr=None, warmup_init=True, relative_step=True)
 
     def train_dataloader(self):
-        return DataLoader(self.train_data, batch_size=4, num_workers=0, shuffle=True)
+        return DataLoader(self.train_data, batch_size=2, num_workers=0, shuffle=True)
 
     def val_dataloader(self):
         return DataLoader(self.val_data, batch_size=1, num_workers=0, shuffle=False)
