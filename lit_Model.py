@@ -94,8 +94,8 @@ class LitT5(pl.LightningModule):
 
     def __init__(self, train, test):
         super(LitT5, self).__init__()
-        self.model = T5ForConditionalGeneration.from_pretrained('t5-large', n_positions=128)
-        self.tokenizer = T5Tokenizer.from_pretrained('t5-large')
+        self.model = T5ForConditionalGeneration.from_pretrained('t5-base', n_positions=128)
+        self.tokenizer = T5Tokenizer.from_pretrained('t5-base')
         if sum([round(len(MyT5Dataset(train)) * 0.9), round(len(MyT5Dataset(train)) * 0.1)]) == len(MyT5Dataset(train)):
             train_set_split = [round(len(MyT5Dataset(train)) * 0.9), round(len(MyT5Dataset(train)) * 0.1)]
         else:
@@ -151,7 +151,7 @@ class LitT5(pl.LightningModule):
         return Adafactor(self.model.parameters(), lr=None, warmup_init=True, relative_step=True)
 
     def train_dataloader(self):
-        return DataLoader(self.train_data, batch_size=1, num_workers=0, shuffle=True)
+        return DataLoader(self.train_data, batch_size=12, num_workers=0, shuffle=True)
 
     def val_dataloader(self):
         return DataLoader(self.val_data, batch_size=1, num_workers=0, shuffle=False)
