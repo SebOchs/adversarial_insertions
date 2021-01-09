@@ -1,6 +1,10 @@
 import pytorch_lightning as pl
 from pytorch_lightning.callbacks import ModelCheckpoint
 from student_lab.lit_Model import LitBERT, LitT5
+import sys
+import os
+# Slurm fix
+sys.path.append(os.getcwd())
 
 
 def training(data_set_name, training_set, test_set, mode, batch_size=8, lr=0.00002, precision=False, accumulate_grad=8,
@@ -22,7 +26,7 @@ def training(data_set_name, training_set, test_set, mode, batch_size=8, lr=0.000
                              progress_bar_refresh_rate=100, accumulate_grad_batches=accumulate_grad,
                              check_val_every_n_epoch=1, num_sanity_val_steps=1, precision=16, amp_level='O2',)
     if ddp:
-        trainer = pl.Trainer(gpus=4, max_epochs=16, checkpoint_callback=checkpoint_callback,
+        trainer = pl.Trainer(gpus=2, max_epochs=16, checkpoint_callback=checkpoint_callback,
                              progress_bar_refresh_rate=100, accumulate_grad_batches=accumulate_grad,
                              check_val_every_n_epoch=1, num_sanity_val_steps=0, num_nodes=1, distributed_backend='ddp')
     if ddp and precision:
