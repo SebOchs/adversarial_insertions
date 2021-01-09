@@ -1,11 +1,15 @@
+import sys
+import os
+# Slurm fix
+sys.path.append(os.getcwd())
 import torch
 import numpy as np
 import pytorch_lightning as pl
 from torch.utils.data import DataLoader, random_split
 from transformers import BertForSequenceClassification, AdamW, Adafactor, BertTokenizer, BertConfig, T5Tokenizer, \
     T5ForConditionalGeneration, T5Config
-from .utils import macro_f1, weighted_f1
-from .dataloading import MyBertDataset, MyT5Dataset
+from utils import macro_f1, weighted_f1
+from dataloading import MyBertDataset, MyT5Dataset
 import warnings
 
 warnings.filterwarnings("ignore")

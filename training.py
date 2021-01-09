@@ -4,7 +4,7 @@ import os
 sys.path.append(os.getcwd())
 import pytorch_lightning as pl
 from pytorch_lightning.callbacks import ModelCheckpoint
-from student_lab.lit_Model import LitBERT, LitT5
+from lit_Model import LitBERT, LitT5
 
 
 
