@@ -1,10 +1,11 @@
-import pytorch_lightning as pl
-from pytorch_lightning.callbacks import ModelCheckpoint
-from student_lab.lit_Model import LitBERT, LitT5
 import sys
 import os
 # Slurm fix
 sys.path.append(os.getcwd())
+import pytorch_lightning as pl
+from pytorch_lightning.callbacks import ModelCheckpoint
+from student_lab.lit_Model import LitBERT, LitT5
+
 
 
 def training(data_set_name, training_set, test_set, mode, batch_size=8, lr=0.00002, precision=False, accumulate_grad=8,
