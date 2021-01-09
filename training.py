@@ -1,27 +1,49 @@
 import pytorch_lightning as pl
 from pytorch_lightning.callbacks import ModelCheckpoint
-from lit_Model import LitBERT, LitT5
+from student_lab.lit_Model import LitBERT, LitT5
 
-checkpoint_callback = ModelCheckpoint(
-    monitor="val_macro",
-    mode="max",
-    filepath='models/seb_t5_{epoch}-{val_macro:.4f}',
-    save_top_k=3
-)
-test = LitT5("datasets/preprocessed/T5/seb/train.npy", "datasets/preprocessed/T5/seb/test_ua.npy")
-trainer = pl.Trainer(
-    gpus=4,
-    num_nodes=1,
-    distributed_backend='ddp',
-    max_epochs=8,
-    checkpoint_callback=checkpoint_callback,
-    accumulate_grad_batches=8,
-    #precision=16,
-    #amp_level='O2',
-    check_val_every_n_epoch=1,
-    num_sanity_val_steps=0,
-    progress_bar_refresh_rate=100
-)
-trainer.fit(test)
 
-print("finished training")
+def training(data_set_name, training_set, test_set, mode, batch_size=8, lr=0.00002, precision=False, accumulate_grad=8,
+             ddp=False, val=''):
+    checkpoint_callback = ModelCheckpoint(
+        monitor="val_macro",
+        mode="max",
+        filepath="models/" + data_set_name + '_' + mode + '_' + '{epoch}-{val_macro:.4f}',
+        save_top_k=3
+    )
+    if mode == 'bert':
+        model = LitBERT(training_set, test_set, batch_size, lr, val='datasets/preprocessed/bert/MNLI/dev_m.npy')
+    if mode == 'T5':
+        model = LitT5(training_set, test_set, batch_size)
+    trainer = pl.Trainer(gpus=1, max_epochs=8, checkpoint_callback=checkpoint_callback, progress_bar_refresh_rate=100,
+                         accumulate_grad_batches=accumulate_grad, check_val_every_n_epoch=1, num_sanity_val_steps=0)
+    if precision:
+        trainer = pl.Trainer(gpus=1, max_epochs=16, checkpoint_callback=checkpoint_callback,
+                             progress_bar_refresh_rate=100, accumulate_grad_batches=accumulate_grad,
+                             check_val_every_n_epoch=1, num_sanity_val_steps=1, precision=16, amp_level='O2',)
+    if ddp:
+        trainer = pl.Trainer(gpus=4, max_epochs=16, checkpoint_callback=checkpoint_callback,
+                             progress_bar_refresh_rate=100, accumulate_grad_batches=accumulate_grad,
+                             check_val_every_n_epoch=1, num_sanity_val_steps=0, num_nodes=1, distributed_backend='ddp')
+    if ddp and precision:
+        trainer = pl.Trainer(gpus=4, max_epochs=16, checkpoint_callback=checkpoint_callback,
+                             progress_bar_refresh_rate=100, accumulate_grad_batches=accumulate_grad,
+                             check_val_every_n_epoch=1, num_sanity_val_steps=0, num_nodes=1, distributed_backend='ddp',
+                             precision=16, amp_level='O2')
+
+
+
+    trainer.fit(model)
+    print("finished training")
+
+
+# SEB Training
+# mnli
+training("mnli", "datasets/preprocessed/bert/MNLI/train.npy", "datasets/preprocessed/bert/MNLI/dev_mm.npy", 'bert',
+         batch_size=48, precision=True, accumulate_grad=8, ddp=True)
+"""
+# T5
+training("seb", "datasets/preprocessed/T5/seb/train.npy", "datasets/preprocessed/T5/seb/test_ua.npy", 'T5',
+         batch_size=32, precision=True, accumulate_grad=1)
+"""
+

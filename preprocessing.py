@@ -75,10 +75,11 @@ def preprocess_mnli(file_path, where_to_save, model):
             array.append([tokenized.input_ids[:128], tokenized.token_type_ids[:128], tokenized.attention_mask[:128],
                           label])
         if model == 'T5':
-            label = tokenizer(line['gold_label'], max_length=128, padding='max_length').input_ids
+            label = tokenizer(line['gold_label'], max_length=128, padding='max_length')
             tokenized = tokenizer("mnli: " + line['sentence1'] + tokenizer.eos_token + line['sentence2'],
                                   max_length=128, padding='max_length')
-            array.append([tokenized.input_ids[:128], label])
+            array.append([tokenized.input_ids[:128], tokenized.attention_mask[:128], label.input_ids,
+                          label.attention_mask])
 
     save(where_to_save, array)
 
@@ -94,9 +95,10 @@ def preprocess_MSpara(file_path, where_to_save, model):
             array.append([tokenized.input_ids[:128], tokenized.token_type_ids[:128], tokenized.attention_mask[:128],
                           label])
         if model == 'T5':
-            label = tokenizer(str(i[0]), max_length=128, padding='max_length').input_ids
+            label = tokenizer(str(i[0]), max_length=128, padding='max_length')
             tokenized = tokenizer("msrpc: " + i[3] + tokenizer.eos_token + i[4], max_length=128, padding='max_length')
-            array.append([tokenized.input_ids[:128], label])
+            array.append([tokenized.input_ids[:128], tokenized.attention_mask[:128], label.input_ids,
+                          label.attention_mask])
 
     save(where_to_save, array)
 
@@ -112,9 +114,10 @@ def preprocess_QQP(file_path, where_to_save, model):
             array.append([tokenized.input_ids[:128], tokenized.token_type_ids[:128], tokenized.attention_mask[:128],
                           label])
         if model == 'T5':
-            label = tokenizer(str(i[5]), max_length=128, padding='max_length').input_ids
+            label = tokenizer(str(i[5]), max_length=128, padding='max_length')
             tokenized = tokenizer("qqp: " + i[3] + tokenizer.eos_token + i[4], max_length=128, padding='max_length')
-            array.append([tokenized.input_ids[:128], label])
+            array.append([tokenized.input_ids[:128], tokenized.attention_mask[:128], label.input_ids,
+                          label.attention_mask])
 
     save(where_to_save, array)
 
@@ -138,9 +141,10 @@ def preprocess_RTE(file_path, where_to_save, model):
             array.append([tokenized.input_ids[:128], tokenized.token_type_ids[:128], tokenized.attention_mask[:128],
                           label])
         if model == 'T5':
-            label = tokenizer(i[3], max_length=128, padding='max_length').input_ids
+            label = tokenizer(i[3], max_length=128, padding='max_length')
             tokenized = tokenizer("rte: " + i[1] + tokenizer.eos_token + i[2], max_length=128, padding='max_length')
-            array.append([tokenized.input_ids[:128], label])
+            array.append([tokenized.input_ids[:128], tokenized.attention_mask[:128], label.input_ids,
+                          label.attention_mask])
 
     save(where_to_save, array)
 
@@ -157,28 +161,29 @@ def preprocess_wic(file_path, where_to_save, model):
             array.append([tokenized.input_ids[:128], tokenized.token_type_ids[:128], tokenized.attention_mask[:128],
                           label])
         if model == 'T5':
-            label = tokenizer(str(line['label']), max_length=128, padding='max_length').input_ids
+            label = tokenizer(str(line['label']), max_length=128, padding='max_length')
             tokenized = tokenizer('wic: ' + line['word'] + tokenizer.eos_token + line['sentence1'] +
                                   tokenizer.eos_token + line['sentence2'], max_length=128, padding='max_length')
-            array.append([tokenized.input_ids[:128], label])
+            array.append([tokenized.input_ids[:128], tokenized.attention_mask[:128], label.input_ids,
+                          label.attention_mask])
 
 
     save(where_to_save, array)
 
-
+"""
 # preprocess seb for bert
-# preprocess_seb('datasets/raw/sciEntsBank_training', 'datasets/preprocessed/bert/seb/train', 'bert')
-# preprocess_seb('datasets/raw/sciEntsBank_testing/test-unseen-answers', 'datasets/preprocessed/bert/seb/test_ua', 'bert')
-# preprocess_seb('datasets/raw/sciEntsBank_testing/test-unseen-domains', 'datasets/preprocessed/bert/seb/test_ud', 'bert')
-# preprocess_seb('datasets/raw/sciEntsBank_testing/test-unseen-questions', 'datasets/preprocessed/bert/seb/test_uq',
-#                'bert')
+preprocess_seb('datasets/raw/sciEntsBank_training', 'datasets/preprocessed/bert/seb/train', 'bert')
+preprocess_seb('datasets/raw/sciEntsBank_testing/test-unseen-answers', 'datasets/preprocessed/bert/seb/test_ua', 'bert')
+preprocess_seb('datasets/raw/sciEntsBank_testing/test-unseen-domains', 'datasets/preprocessed/bert/seb/test_ud', 'bert')
+preprocess_seb('datasets/raw/sciEntsBank_testing/test-unseen-questions', 'datasets/preprocessed/bert/seb/test_uq',
+                'bert')
 
 # preprocess seb for T5
 preprocess_seb('datasets/raw/sciEntsBank_training', 'datasets/preprocessed/T5/seb/train', 'T5')
 preprocess_seb('datasets/raw/sciEntsBank_testing/test-unseen-answers', 'datasets/preprocessed/T5/seb/test_ua', 'T5')
 preprocess_seb('datasets/raw/sciEntsBank_testing/test-unseen-domains', 'datasets/preprocessed/T5/seb/test_ud', 'T5')
 preprocess_seb('datasets/raw/sciEntsBank_testing/test-unseen-questions', 'datasets/preprocessed/T5/seb/test_uq', 'T5')
-"""
+
 # preprocess mnli for bert
 preprocess_mnli('datasets/raw/MNLI_matched/original/multinli_1.0_train.jsonl', 'datasets/preprocessed/bert/MNLI/train',
                 'bert')
@@ -186,7 +191,7 @@ preprocess_mnli('datasets/raw/MNLI_matched/original/multinli_1.0_dev_matched.jso
                 'datasets/preprocessed/bert/MNLI/dev_m', 'bert')
 preprocess_mnli('datasets/raw/MNLI_matched/original/multinli_1.0_dev_mismatched.jsonl',
                 'datasets/preprocessed/bert/MNLI/dev_mm', 'bert')
-
+"""
 # preprocess mnli for T5
 preprocess_mnli('datasets/raw/MNLI_matched/original/multinli_1.0_train.jsonl', 'datasets/preprocessed/T5/MNLI/train',
                 'T5')
@@ -194,36 +199,35 @@ preprocess_mnli('datasets/raw/MNLI_matched/original/multinli_1.0_dev_matched.jso
                 'datasets/preprocessed/T5/MNLI/dev_m', 'T5')
 preprocess_mnli('datasets/raw/MNLI_matched/original/multinli_1.0_dev_mismatched.jsonl',
                 'datasets/preprocessed/T5/MNLI/dev_mm', 'T5')
-
+"""
 # preprocess msrpc for bert
 preprocess_MSpara('datasets/raw/MSpara/msr_paraphrase_train.txt', 'datasets/preprocessed/bert/MSpara/train', 'bert')
 preprocess_MSpara('datasets/raw/MSpara/msr_paraphrase_test.txt', 'datasets/preprocessed/bert/MSpara/test', 'bert')
-
+"""
 # preprocess msrpc for T5
 preprocess_MSpara('datasets/raw/MSpara/msr_paraphrase_train.txt', 'datasets/preprocessed/T5/MSpara/train', 'T5')
 preprocess_MSpara('datasets/raw/MSpara/msr_paraphrase_test.txt', 'datasets/preprocessed/T5/MSpara/test', 'T5')
-
+"""
 # preprocess qqp for bert
 preprocess_QQP('datasets/raw/QQP/train.tsv', 'datasets/preprocessed/bert/qqp/train', 'bert')
 preprocess_QQP('datasets/raw/QQP/dev.tsv', 'datasets/preprocessed/bert/qqp/dev', 'bert')
-
+"""
 # preprocess qqp for T5
 preprocess_QQP('datasets/raw/QQP/train.tsv', 'datasets/preprocessed/T5/qqp/train', 'T5')
 preprocess_QQP('datasets/raw/QQP/dev.tsv', 'datasets/preprocessed/T5/qqp/dev', 'T5')
-
+"""
 # preprocess RTE for bert
 preprocess_RTE('datasets/raw/RTE/train.tsv', 'datasets/preprocessed/bert/RTE/train', 'bert')
 preprocess_RTE('datasets/raw/RTE/dev.tsv', 'datasets/preprocessed/bert/RTE/dev', 'bert')
-
+"""
 # preprocess RTE for T5
 preprocess_RTE('datasets/raw/RTE/train.tsv', 'datasets/preprocessed/T5/RTE/train', 'T5')
 preprocess_RTE('datasets/raw/RTE/dev.tsv', 'datasets/preprocessed/T5/RTE/dev', 'T5')
-
+"""
 # preprocess WiC for bert
 preprocess_wic('datasets/raw/WiC/train.jsonl', 'datasets/preprocessed/bert/wic/train', 'bert')
 preprocess_wic('datasets/raw/WiC/val.jsonl', 'datasets/preprocessed/bert/wic/dev', 'bert')
-
+"""
 # preprocess WiC for T5
 preprocess_wic('datasets/raw/WiC/train.jsonl', 'datasets/preprocessed/T5/wic/train', 'T5')
 preprocess_wic('datasets/raw/WiC/val.jsonl', 'datasets/preprocessed/T5/wic/dev', 'T5')
-"""
