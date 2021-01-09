@@ -12,9 +12,9 @@ def training(data_set_name, training_set, test_set, mode, batch_size=8, lr=0.000
         save_top_k=3
     )
     if mode == 'bert':
-        model = LitBERT(training_set, test_set, batch_size, lr, val='datasets/preprocessed/bert/MNLI/dev_m.npy')
+        model = LitBERT(training_set, test_set, batch_size, lr, val=val)
     if mode == 'T5':
-        model = LitT5(training_set, test_set, batch_size)
+        model = LitT5(training_set, test_set, batch_size, val=val)
     trainer = pl.Trainer(gpus=1, max_epochs=8, checkpoint_callback=checkpoint_callback, progress_bar_refresh_rate=100,
                          accumulate_grad_batches=accumulate_grad, check_val_every_n_epoch=1, num_sanity_val_steps=0)
     if precision:
@@ -26,9 +26,9 @@ def training(data_set_name, training_set, test_set, mode, batch_size=8, lr=0.000
                              progress_bar_refresh_rate=100, accumulate_grad_batches=accumulate_grad,
                              check_val_every_n_epoch=1, num_sanity_val_steps=0, num_nodes=1, distributed_backend='ddp')
     if ddp and precision:
-        trainer = pl.Trainer(gpus=4, max_epochs=16, checkpoint_callback=checkpoint_callback,
+        trainer = pl.Trainer(gpus=2, max_epochs=8, checkpoint_callback=checkpoint_callback,
                              progress_bar_refresh_rate=100, accumulate_grad_batches=accumulate_grad,
-                             check_val_every_n_epoch=1, num_sanity_val_steps=0, num_nodes=1, distributed_backend='ddp',
+                             check_val_every_n_epoch=1, num_sanity_val_steps=1, num_nodes=1, distributed_backend='ddp',
                              precision=16, amp_level='O2')
 
 
@@ -40,7 +40,9 @@ def training(data_set_name, training_set, test_set, mode, batch_size=8, lr=0.000
 # SEB Training
 # mnli
 training("mnli", "datasets/preprocessed/bert/MNLI/train.npy", "datasets/preprocessed/bert/MNLI/dev_mm.npy", 'bert',
-         batch_size=48, precision=True, accumulate_grad=8, ddp=True)
+         batch_size=64, precision=True, accumulate_grad=1, ddp=True, val="datasets/preprocessed/bert/MNLI/dev_m.npy")
+training("mnli", "datasets/preprocessed/T5/MNLI/train.npy", "datasets/preprocessed/T5/MNLI/dev_mm.npy", 'T5',
+         batch_size=32, precision=True, accumulate_grad=2, ddp=True, val="datasets/preprocessed/T5/MNLI/dev_m.npy")
 """
 # T5
 training("seb", "datasets/preprocessed/T5/seb/train.npy", "datasets/preprocessed/T5/seb/test_ua.npy", 'T5',
