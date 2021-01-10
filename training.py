@@ -52,13 +52,13 @@ training("mnli", "datasets/preprocessed/T5/MNLI/train.npy", "datasets/preprocess
          batch_size=16, precision=True, accumulate_grad=4, ddp=True)
 """
 # qqp
-
+"""
 training("qqp", "datasets/preprocessed/bert/qqp/train.npy", "datasets/preprocessed/bert/qqp/dev.npy", 'bert',
          batch_size=64, precision=True, accumulate_grad=1, ddp=True, labels=2)
 """
 training("qqp", "datasets/preprocessed/T5/qqp/train.npy", "datasets/preprocessed/T5/qqp/dev.npy", 'T5',
          batch_size=16, precision=True, accumulate_grad=4, ddp=True)
-"""
+
 """
 # msrpc
 training("msrpc", "datasets/preprocessed/bert/MSpara/train.npy", "datasets/preprocessed/bert/MSpara/test.npy", 'bert',
