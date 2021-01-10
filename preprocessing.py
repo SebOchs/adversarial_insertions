@@ -76,8 +76,8 @@ def preprocess_mnli(file_path, where_to_save, model):
                           label])
         if model == 'T5':
             label = tokenizer(line['gold_label'], max_length=128, padding='max_length')
-            tokenized = tokenizer("mnli: " + line['sentence1'] + tokenizer.eos_token + line['sentence2'],
-                                  max_length=128, padding='max_length')
+            tokenized = tokenizer("mnli: premise:" + line['sentence1'] + tokenizer.eos_token + "hypothesis:" +
+                                  line['sentence2'], max_length=128, padding='max_length')
             array.append([tokenized.input_ids[:128], tokenized.attention_mask[:128], label.input_ids,
                           label.attention_mask])
 
@@ -95,8 +95,9 @@ def preprocess_MSpara(file_path, where_to_save, model):
             array.append([tokenized.input_ids[:128], tokenized.token_type_ids[:128], tokenized.attention_mask[:128],
                           label])
         if model == 'T5':
-            label = tokenizer(str(i[0]), max_length=128, padding='max_length')
-            tokenized = tokenizer("msrpc: " + i[3] + tokenizer.eos_token + i[4], max_length=128, padding='max_length')
+            label = tokenizer(str(bool(i[0])), max_length=128, padding='max_length')
+            tokenized = tokenizer("msrpc: " + "sentence: " + i[3] + tokenizer.eos_token + "paraphrase: " + i[4], max_length=128,
+                                  padding='max_length')
             array.append([tokenized.input_ids[:128], tokenized.attention_mask[:128], label.input_ids,
                           label.attention_mask])
 
@@ -114,8 +115,9 @@ def preprocess_QQP(file_path, where_to_save, model):
             array.append([tokenized.input_ids[:128], tokenized.token_type_ids[:128], tokenized.attention_mask[:128],
                           label])
         if model == 'T5':
-            label = tokenizer(str(i[5]), max_length=128, padding='max_length')
-            tokenized = tokenizer("qqp: " + i[3] + tokenizer.eos_token + i[4], max_length=128, padding='max_length')
+            label = tokenizer(str(bool(i[5])), max_length=128, padding='max_length')
+            tokenized = tokenizer("qqp: question:" + i[3] + tokenizer.eos_token + "duplicate: " + i[4],
+                                  max_length=128, padding='max_length')
             array.append([tokenized.input_ids[:128], tokenized.attention_mask[:128], label.input_ids,
                           label.attention_mask])
 
@@ -142,7 +144,8 @@ def preprocess_RTE(file_path, where_to_save, model):
                           label])
         if model == 'T5':
             label = tokenizer(i[3], max_length=128, padding='max_length')
-            tokenized = tokenizer("rte: " + i[1] + tokenizer.eos_token + i[2], max_length=128, padding='max_length')
+            tokenized = tokenizer("rte: hypothesis: " + i[1] + tokenizer.eos_token + "premise: " +i[2], max_length=128,
+                                  padding='max_length')
             array.append([tokenized.input_ids[:128], tokenized.attention_mask[:128], label.input_ids,
                           label.attention_mask])
 
@@ -156,14 +159,14 @@ def preprocess_wic(file_path, where_to_save, model):
     for line in table:
         if model == 'bert':
             label = int(line['label'])
-            tokenized = tokenizer(line['word'] + ': ' + line['sentence1'],
-                                  line['word'] + ': ' + line['sentence2'], max_length=128, padding='max_length')
+            tokenized = tokenizer(line['sentence1'], line['sentence2'], max_length=128, padding='max_length')
             array.append([tokenized.input_ids[:128], tokenized.token_type_ids[:128], tokenized.attention_mask[:128],
                           label])
         if model == 'T5':
             label = tokenizer(str(line['label']), max_length=128, padding='max_length')
-            tokenized = tokenizer('wic: ' + line['word'] + tokenizer.eos_token + line['sentence1'] +
-                                  tokenizer.eos_token + line['sentence2'], max_length=128, padding='max_length')
+            tokenized = tokenizer('wic: word: ' + line['word'] + tokenizer.eos_token + "first:" + line['sentence1'] +
+                                  tokenizer.eos_token + "second:" + line['sentence2'], max_length=128,
+                                  padding='max_length')
             array.append([tokenized.input_ids[:128], tokenized.attention_mask[:128], label.input_ids,
                           label.attention_mask])
 
@@ -171,18 +174,13 @@ def preprocess_wic(file_path, where_to_save, model):
     save(where_to_save, array)
 
 """
+# BERT
 # preprocess seb for bert
 preprocess_seb('datasets/raw/sciEntsBank_training', 'datasets/preprocessed/bert/seb/train', 'bert')
 preprocess_seb('datasets/raw/sciEntsBank_testing/test-unseen-answers', 'datasets/preprocessed/bert/seb/test_ua', 'bert')
 preprocess_seb('datasets/raw/sciEntsBank_testing/test-unseen-domains', 'datasets/preprocessed/bert/seb/test_ud', 'bert')
 preprocess_seb('datasets/raw/sciEntsBank_testing/test-unseen-questions', 'datasets/preprocessed/bert/seb/test_uq',
                 'bert')
-
-# preprocess seb for T5
-preprocess_seb('datasets/raw/sciEntsBank_training', 'datasets/preprocessed/T5/seb/train', 'T5')
-preprocess_seb('datasets/raw/sciEntsBank_testing/test-unseen-answers', 'datasets/preprocessed/T5/seb/test_ua', 'T5')
-preprocess_seb('datasets/raw/sciEntsBank_testing/test-unseen-domains', 'datasets/preprocessed/T5/seb/test_ud', 'T5')
-preprocess_seb('datasets/raw/sciEntsBank_testing/test-unseen-questions', 'datasets/preprocessed/T5/seb/test_uq', 'T5')
 
 # preprocess mnli for bert
 preprocess_mnli('datasets/raw/MNLI_matched/original/multinli_1.0_train.jsonl', 'datasets/preprocessed/bert/MNLI/train',
@@ -191,7 +189,32 @@ preprocess_mnli('datasets/raw/MNLI_matched/original/multinli_1.0_dev_matched.jso
                 'datasets/preprocessed/bert/MNLI/dev_m', 'bert')
 preprocess_mnli('datasets/raw/MNLI_matched/original/multinli_1.0_dev_mismatched.jsonl',
                 'datasets/preprocessed/bert/MNLI/dev_mm', 'bert')
+
+# preprocess msrpc for bert
+preprocess_MSpara('datasets/raw/MSpara/msr_paraphrase_train.txt', 'datasets/preprocessed/bert/MSpara/train', 'bert')
+preprocess_MSpara('datasets/raw/MSpara/msr_paraphrase_test.txt', 'datasets/preprocessed/bert/MSpara/test', 'bert')
+
+# preprocess qqp for bert
+preprocess_QQP('datasets/raw/QQP/train.tsv', 'datasets/preprocessed/bert/qqp/train', 'bert')
+preprocess_QQP('datasets/raw/QQP/dev.tsv', 'datasets/preprocessed/bert/qqp/dev', 'bert')
+
+# preprocess RTE for bert
+preprocess_RTE('datasets/raw/RTE/train.tsv', 'datasets/preprocessed/bert/RTE/train', 'bert')
+preprocess_RTE('datasets/raw/RTE/dev.tsv', 'datasets/preprocessed/bert/RTE/dev', 'bert')
+
+# preprocess WiC for bert
+preprocess_wic('datasets/raw/WiC/train.jsonl', 'datasets/preprocessed/bert/wic/train', 'bert')
+preprocess_wic('datasets/raw/WiC/val.jsonl', 'datasets/preprocessed/bert/wic/dev', 'bert')
+
 """
+# T5
+"""
+# preprocess seb for T5
+preprocess_seb('datasets/raw/sciEntsBank_training', 'datasets/preprocessed/T5/seb/train', 'T5')
+preprocess_seb('datasets/raw/sciEntsBank_testing/test-unseen-answers', 'datasets/preprocessed/T5/seb/test_ua', 'T5')
+preprocess_seb('datasets/raw/sciEntsBank_testing/test-unseen-domains', 'datasets/preprocessed/T5/seb/test_ud', 'T5')
+preprocess_seb('datasets/raw/sciEntsBank_testing/test-unseen-questions', 'datasets/preprocessed/T5/seb/test_uq', 'T5')
+
 # preprocess mnli for T5
 preprocess_mnli('datasets/raw/MNLI_matched/original/multinli_1.0_train.jsonl', 'datasets/preprocessed/T5/MNLI/train',
                 'T5')
@@ -199,35 +222,21 @@ preprocess_mnli('datasets/raw/MNLI_matched/original/multinli_1.0_dev_matched.jso
                 'datasets/preprocessed/T5/MNLI/dev_m', 'T5')
 preprocess_mnli('datasets/raw/MNLI_matched/original/multinli_1.0_dev_mismatched.jsonl',
                 'datasets/preprocessed/T5/MNLI/dev_mm', 'T5')
-"""
-# preprocess msrpc for bert
-preprocess_MSpara('datasets/raw/MSpara/msr_paraphrase_train.txt', 'datasets/preprocessed/bert/MSpara/train', 'bert')
-preprocess_MSpara('datasets/raw/MSpara/msr_paraphrase_test.txt', 'datasets/preprocessed/bert/MSpara/test', 'bert')
-"""
+
 # preprocess msrpc for T5
 preprocess_MSpara('datasets/raw/MSpara/msr_paraphrase_train.txt', 'datasets/preprocessed/T5/MSpara/train', 'T5')
 preprocess_MSpara('datasets/raw/MSpara/msr_paraphrase_test.txt', 'datasets/preprocessed/T5/MSpara/test', 'T5')
-"""
-# preprocess qqp for bert
-preprocess_QQP('datasets/raw/QQP/train.tsv', 'datasets/preprocessed/bert/qqp/train', 'bert')
-preprocess_QQP('datasets/raw/QQP/dev.tsv', 'datasets/preprocessed/bert/qqp/dev', 'bert')
 """
 # preprocess qqp for T5
 preprocess_QQP('datasets/raw/QQP/train.tsv', 'datasets/preprocessed/T5/qqp/train', 'T5')
 preprocess_QQP('datasets/raw/QQP/dev.tsv', 'datasets/preprocessed/T5/qqp/dev', 'T5')
 """
-# preprocess RTE for bert
-preprocess_RTE('datasets/raw/RTE/train.tsv', 'datasets/preprocessed/bert/RTE/train', 'bert')
-preprocess_RTE('datasets/raw/RTE/dev.tsv', 'datasets/preprocessed/bert/RTE/dev', 'bert')
-"""
 # preprocess RTE for T5
 preprocess_RTE('datasets/raw/RTE/train.tsv', 'datasets/preprocessed/T5/RTE/train', 'T5')
 preprocess_RTE('datasets/raw/RTE/dev.tsv', 'datasets/preprocessed/T5/RTE/dev', 'T5')
-"""
-# preprocess WiC for bert
-preprocess_wic('datasets/raw/WiC/train.jsonl', 'datasets/preprocessed/bert/wic/train', 'bert')
-preprocess_wic('datasets/raw/WiC/val.jsonl', 'datasets/preprocessed/bert/wic/dev', 'bert')
-"""
+
+
 # preprocess WiC for T5
 preprocess_wic('datasets/raw/WiC/train.jsonl', 'datasets/preprocessed/T5/wic/train', 'T5')
 preprocess_wic('datasets/raw/WiC/val.jsonl', 'datasets/preprocessed/T5/wic/dev', 'T5')
+"""
