@@ -122,7 +122,7 @@ class LitT5(pl.LightningModule):
         self.test_data = MyT5Dataset(test)
 
     def forward(self, tok_seq, attn_seq):
-        return self.tokenizer.decode(self.model.generate(input_ids=tok_seq, attention_mask=attn_seq, max_length=2)[0],
+        return self.tokenizer.decode(self.model.generate(input_ids=tok_seq, attention_mask=attn_seq, max_length=5)[0],
                                      skip_special_tokens=True)
 
     def training_step(self, batch, batch_idx):

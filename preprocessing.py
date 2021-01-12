@@ -95,7 +95,7 @@ def preprocess_MSpara(file_path, where_to_save, model):
             array.append([tokenized.input_ids[:128], tokenized.token_type_ids[:128], tokenized.attention_mask[:128],
                           label])
         if model == 'T5':
-            label = tokenizer(str(bool(i[0])), max_length=128, padding='max_length')
+            label = tokenizer(str(bool(int(i[0]))), max_length=128, padding='max_length')
             tokenized = tokenizer("msrpc: " + "sentence: " + i[3] + tokenizer.eos_token + "paraphrase: " + i[4], max_length=128,
                                   padding='max_length')
             array.append([tokenized.input_ids[:128], tokenized.attention_mask[:128], label.input_ids,
@@ -115,11 +115,12 @@ def preprocess_QQP(file_path, where_to_save, model):
             array.append([tokenized.input_ids[:128], tokenized.token_type_ids[:128], tokenized.attention_mask[:128],
                           label])
         if model == 'T5':
-            label = tokenizer(str(bool(i[5])), max_length=128, padding='max_length')
+            label = tokenizer(str(bool(int(i[5]))), max_length=128, padding='max_length')
             tokenized = tokenizer("qqp: question:" + i[3] + tokenizer.eos_token + "duplicate: " + i[4],
                                   max_length=128, padding='max_length')
             array.append([tokenized.input_ids[:128], tokenized.attention_mask[:128], label.input_ids,
                           label.attention_mask])
+
 
     save(where_to_save, array)
 
@@ -143,7 +144,7 @@ def preprocess_RTE(file_path, where_to_save, model):
             array.append([tokenized.input_ids[:128], tokenized.token_type_ids[:128], tokenized.attention_mask[:128],
                           label])
         if model == 'T5':
-            label = tokenizer(i[3], max_length=128, padding='max_length')
+            label = tokenizer(str(bool(label_to_int(i[3]))), max_length=128, padding='max_length')
             tokenized = tokenizer("rte: hypothesis: " + i[1] + tokenizer.eos_token + "premise: " +i[2], max_length=128,
                                   padding='max_length')
             array.append([tokenized.input_ids[:128], tokenized.attention_mask[:128], label.input_ids,
@@ -230,11 +231,11 @@ preprocess_MSpara('datasets/raw/MSpara/msr_paraphrase_test.txt', 'datasets/prepr
 # preprocess qqp for T5
 preprocess_QQP('datasets/raw/QQP/train.tsv', 'datasets/preprocessed/T5/qqp/train', 'T5')
 preprocess_QQP('datasets/raw/QQP/dev.tsv', 'datasets/preprocessed/T5/qqp/dev', 'T5')
-"""
+
 # preprocess RTE for T5
 preprocess_RTE('datasets/raw/RTE/train.tsv', 'datasets/preprocessed/T5/RTE/train', 'T5')
 preprocess_RTE('datasets/raw/RTE/dev.tsv', 'datasets/preprocessed/T5/RTE/dev', 'T5')
-
+"""
 
 # preprocess WiC for T5
 preprocess_wic('datasets/raw/WiC/train.jsonl', 'datasets/preprocessed/T5/wic/train', 'T5')
