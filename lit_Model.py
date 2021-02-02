@@ -142,12 +142,11 @@ class LitT5(pl.LightningModule):
 
     def forward(self, tok_seq, attn_seq):
         return self.tokenizer.decode(self.model.generate(input_ids=tok_seq, attention_mask=attn_seq, min_length=2,
-                                                         max_length=4)[0],
+                                                         max_length=5)[0],
                                      skip_special_tokens=True)
 
     def training_step(self, batch, batch_idx):
         text, attn, lab, lab_attn = batch
-        lab = lab[:, :4].contiguous()
         return self.model(input_ids=text, attention_mask=attn, labels=lab)[0].mean()
 
     def validation_step(self, batch, batch_idx):
