@@ -4,13 +4,29 @@ from student_lab.lit_Model import LitBERT, LitT5
 from torch.utils.data import DataLoader
 import torch
 
-# Check if warning message is true, wasn't
-# model_test = torch.load('models/seb_bert_epoch=6-val_macro=0.7890.ckpt')
-model = LitBERT.load_from_checkpoint('models/seb_bert_epoch=6-val_macro=0.7890.ckpt')
-model.eval()
-model.freeze()
-trainer = pl.Trainer(gpus=1)
-test_ua_dl = DataLoader(MyBertDataset("datasets/preprocessed/bert/seb/test_ua.npy"))
-test_ud_dl = DataLoader(MyBertDataset("datasets/preprocessed/bert/seb/test_ud.npy"))
-test_uq_dl = DataLoader(MyBertDataset("datasets/preprocessed/bert/seb/test_uq.npy"))
-trainer.test(model, test_dataloaders=[test_ua_dl, test_ud_dl, test_uq_dl])
+
+def testing(checkpoint, mode, test_dataloaders=[]):
+    if mode == 'bert':
+        model = LitBERT.load_from_checkpoint(checkpoint)
+        if len(test_dataloaders) > 0:
+            tests = []
+            for test in test_dataloaders:
+                tests.append(DataLoader(MyBertDataset(test)))
+        else:
+            tests = [model.test_dataloader()]
+    if mode == 'T5':
+        model = LitT5.load_from_checkpoint(checkpoint)
+        if len(test_dataloaders) > 0:
+            tests = []
+            for test in test_dataloaders:
+                tests.append(DataLoader(MyT5Dataset(test)))
+        else:
+            tests = [model.test_dataloader()]
+
+    model.eval()
+    model.freeze()
+    trainer = pl.Trainer(gpus=1)
+    trainer.test(model, test_dataloaders=tests)
+
+
+testing('models/msrpc_bert_epoch=2-val_macro=0.8393.ckpt', 'bert')

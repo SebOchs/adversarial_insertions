@@ -39,6 +39,7 @@ class LitBERT(pl.LightningModule):
             self.train_data, self.val_data = random_split(
                 MyBertDataset(train), train_set_split, generator=torch.Generator().manual_seed(42))
         self.test_data = MyBertDataset(test)
+        self.correct_incorrect_predictions = {}
 
     def forward(self, tok_seq):
         return self.model(input_ids=tok_seq[0], token_type_ids=tok_seq[1], attention_mask=tok_seq[2],
@@ -68,19 +69,37 @@ class LitBERT(pl.LightningModule):
         self.log("val_macro", m_f1)
 
     # prepared for later use
-    def test_step(self, batch, batch_idx, data_set):
+    def test_step(self, batch, batch_idx):
         text, seg, att, lab = batch
         return {'prediction': torch.argmax(self(batch)[1]).item(), 'truth': lab.squeeze().item()}
 
     def test_epoch_end(self, outputs):
-        for i in range(len(outputs)):
-            pred = [x['prediction'] for x in outputs[i]]
-            lab = [x['truth'] for x in outputs[i]]
+        if isinstance(outputs[0], dict):
+            pred = [x['prediction'] for x in outputs]
+            lab = [x['truth'] for x in outputs]
             acc_stack = np.stack((pred, lab), axis=0)
-            acc = np.sum([1 for i in range(len(acc_stack.T)) if acc_stack[0, i] == acc_stack[1, i]]) / len(acc_stack.T)
+            acc = np.sum([1 for i in range(len(acc_stack.T)) if acc_stack[0, i] == acc_stack[1, i]]) / len(
+                acc_stack.T)
             m_f1 = macro_f1(pred, lab)
             w_f1 = weighted_f1(pred, lab)
-            print("Dataset " + str(i) + " Accuracy: " + str(acc)[:6] + ", Macro-F1: " + str(m_f1)[:6] + ", Weighted-F1 " + str(w_f1)[:6])
+            self.log("accuracy ", acc)
+            self.log("w-f1 ", w_f1)
+            self.log("m-f1 ", m_f1)
+
+        else:
+            for i in range(len(outputs)):
+                pred = [x['prediction'] for x in outputs[i]]
+                lab = [x['truth'] for x in outputs[i]]
+                acc_stack = np.stack((pred, lab), axis=0)
+                acc = np.sum([1 for i in range(len(acc_stack.T)) if acc_stack[0, i] == acc_stack[1, i]]) / len(
+                    acc_stack.T)
+                m_f1 = macro_f1(pred, lab)
+                w_f1 = weighted_f1(pred, lab)
+                self.log("accuracy " + str(i), acc)
+                self.log("w-f1 " + str(i), w_f1)
+                self.log("m-f1 " + str(i), m_f1)
+
+
 
 
 
@@ -117,16 +136,18 @@ class LitT5(pl.LightningModule):
             else:
                 train_set_split = [round(len(MyT5Dataset(train)) * 0.9), round(len(MyT5Dataset(train)) * 0.1) + 1]
             self.train_data, self.val_data = random_split(
-                MyT5Dataset(train), train_set_split, generator=torch.Generator().manual_seed(42))
+                MyT5Dataset(train), train_set_split)
 
         self.test_data = MyT5Dataset(test)
 
     def forward(self, tok_seq, attn_seq):
-        return self.tokenizer.decode(self.model.generate(input_ids=tok_seq, attention_mask=attn_seq, max_length=5)[0],
+        return self.tokenizer.decode(self.model.generate(input_ids=tok_seq, attention_mask=attn_seq, min_length=2,
+                                                         max_length=4)[0],
                                      skip_special_tokens=True)
 
     def training_step(self, batch, batch_idx):
         text, attn, lab, lab_attn = batch
+        lab = lab[:, :4].contiguous()
         return self.model(input_ids=text, attention_mask=attn, labels=lab)[0].mean()
 
     def validation_step(self, batch, batch_idx):
@@ -144,24 +165,38 @@ class LitT5(pl.LightningModule):
         self.log("val_macro", m_f1)
 
     # prepared for later use
-    def test_step(self, batch, batch_idx, data_set):
+    def test_step(self, batch, batch_idx):
         text, attn, lab, lab_attn = batch
         return {'prediction': self(text, attn), 'truth': self.tokenizer.decode(lab.squeeze(), skip_special_tokens=True)}
 
     def test_epoch_end(self, outputs):
-        for i in range(len(outputs)):
-            pred = [x['prediction'] for x in outputs[i]]
-            lab = [x['truth'] for x in outputs[i]]
+        if isinstance(outputs[0], dict):
+            pred = [x['prediction'] for x in outputs]
+            lab = [x['truth'] for x in outputs]
             acc_stack = np.stack((pred, lab), axis=0)
             acc = np.sum([1 for i in range(len(acc_stack.T)) if acc_stack[0, i] == acc_stack[1, i]]) / len(
                 acc_stack.T)
             m_f1 = macro_f1(pred, lab)
             w_f1 = weighted_f1(pred, lab)
-            print("Dataset " + str(i) + " Accuracy: " + str(acc)[:6] + ", Macro-F1: " + str(m_f1)[:6] + ", Weighted-F1 "
-                  + str(w_f1)[:6])
+            self.log("accuracy ", acc)
+            self.log("w-f1 ", w_f1)
+            self.log("m-f1 ", m_f1)
+
+        else:
+            for i in range(len(outputs)):
+                pred = [x['prediction'] for x in outputs[i]]
+                lab = [x['truth'] for x in outputs[i]]
+                acc_stack = np.stack((pred, lab), axis=0)
+                acc = np.sum([1 for i in range(len(acc_stack.T)) if acc_stack[0, i] == acc_stack[1, i]]) / len(
+                    acc_stack.T)
+                m_f1 = macro_f1(pred, lab)
+                w_f1 = weighted_f1(pred, lab)
+                self.log("accuracy " + str(i), acc)
+                self.log("w-f1 " + str(i), w_f1)
+                self.log("m-f1 " + str(i), m_f1)
 
     def configure_optimizers(self):
-        return Adafactor(self.model.parameters(), lr=None, warmup_init=True, relative_step=True)
+        return Adafactor(self.model.parameters(), lr=None, relative_step=True, warmup_init=True)
 
     def train_dataloader(self):
         return DataLoader(self.train_data, batch_size=self.batch_size, num_workers=0, shuffle=True)

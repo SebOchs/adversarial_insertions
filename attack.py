@@ -1,57 +1,98 @@
 import torch
 import numpy as np
-from lit_BERT import LitSEBBERT
+from lit_Model import LitBERT, LitT5
 import spacy
 import time
 import utils
+import tqdm
+
 device = torch.device("cuda")
 
 
 def to_torch(x):
-    return torch.tensor(x).unsqueeze(0)
+    return torch.tensor(x).unsqueeze(0).to(device)
 
 
-def predict(x):
-    """
-    Inserts an adverb/adjective at specific place in a sentence and let's model predict
-    :param word: string, adverb or adjective
-    :param x: sentence/sequence preprocessed by spacy
-    :param j: integer/index, where param word gets inserted
-    :param model: finetuned huggingface model
-    :param tokenizer: huggingface tokenizer
-    :return: model prediction of modified sentence, modified sentence
-    """
-    return torch.argmax(model(input_ids=to_torch(x.input_ids[:128]).to(device),
-                              token_type_ids=to_torch(x.token_type_ids[:128]).to(device),
-                              attention_mask=to_torch(x.attention_mask[:128]).to(device))[0]).item()
+def attack(path, attack_data, mode, goal=None):
+    data = np.load(attack_data, allow_pickle=True).item()
+    if mode == 'bert':
+        ckpt = LitBERT.load_from_checkpoint(path)
+        model = ckpt.model
+        model.cuda()
+        model.eval()
+        data_collector = {
+            'confidence': {},
+            'query': {},
+            'success': {},
+            'adversary_with_info': []
+        }
+        if goal is not None:
+            goal = goal
+        else:
+            goal = 1
+
+        with torch.no_grad():
+            for i in tqdm.tqdm(range(len(data['data'])), desc='Attacking'):
+                data_instance = data['data'][i]
+                batch = data_instance['input']
+                result = model(input_ids=to_torch(batch.input_ids),
+                               token_type_ids=to_torch(batch.token_type_ids),
+                               attention_mask=to_torch(batch.attention_mask))
+                data_collector['query'][data_instance['original']] = \
+                    data_collector['query'].get(data_instance['original'], 0) + 1
+                if torch.argmax(result.logits).to('cpu').item() == goal:
+                    # collect all the data
+                    data_collector['success'][data_instance['original']] = \
+                        data_collector['success'].get(data_instance['original'], 0) + 1
+                    data_collector['confidence'][data_instance['confidence']] = \
+                        data_collector['confidence'].get(data_instance['confidence'], 0) + 1
+                    data_collector['adversary_with_info'].append({'type': data_instance['insert_type'],
+                                                                  'inserted': data_instance['inserted'],
+                                                                  'original': data_instance['original'],
+                                                                  'confidence': data_instance['confidence'],
+                                                                  'adversary': ckpt.tokenizer.decode(batch.input_ids)
+                                                                 .split(ckpt.tokenizer.pad_token)[0]})
+        np.save(attack_data.rsplit('/', 1)[0] + '/attack_results.npy', data_collector, allow_pickle=True)
+
+    if mode == 'T5':
+        ckpt = LitT5.load_from_checkpoint(path)
+        model = ckpt.model
+        model.cuda()
+        model.eval()
+        data_collector = {
+            'query': {},
+            'success': {},
+            'adversary_with_info': []
+        }
+        if goal is not None:
+            goal = goal
+        else:
+            goal = 'True'
+
+        with torch.no_grad():
+            for i in tqdm.tqdm(range(len(data['data'])), desc='Attacking'):
+                data_instance = data['data'][i]
+                batch = data_instance['input']
+                result = ckpt.tokenizer.decode(model.generate(input_ids=to_torch(batch.input_ids),
+                                                              attention_mask=to_torch(batch.attention_mask))[0],
+                                               skip_special_tokens=True)
+                data_collector['query'][data_instance['original']] = \
+                    data_collector['query'].get(data_instance['original'], 0) + 1
+                if result == goal:
+                    # collect all the data
+                    data_collector['success'][data_instance['original']] = \
+                        data_collector['success'].get(data_instance['original'], 0) + 1
+                    data_collector['adversary_with_info'].append({'type': data_instance['insert_type'],
+                                                                  'inserted': data_instance['inserted'],
+                                                                  'original': data_instance['original'],
+                                                                  'adversary':
+                                                                      ckpt.tokenizer.decode(batch.input_ids)
+                                                                 .split(ckpt.tokenizer.pad_token)[0]})
+        np.save(attack_data.rsplit('/', 1)[0] + '/attack_results.npy', data_collector, allow_pickle=True)
 
 
-# Load checkpoint and get necessary objects
-checkpoint = LitSEBBERT.load_from_checkpoint("models/seb_bert_epoch=4-val_macro=0.7680.ckpt")
-model = checkpoint.model
-model.cuda()
-model.eval()
-tokenizer = checkpoint.tokenizer
-# only get incorrect data instances
-attack_data = np.load('datasets/preprocessed/bert/sciEntsBank/attack_data.npy', allow_pickle=True)
-# Data collectors
-query = {}
-successes = {}
-adversaries = {}
-for i in attack_data:
-    adversaries[i[1]] = []
-start = time.time()
-ctr = 1
-for date in attack_data:
-    dict_entry = date[3] + ' : ' + date[2]
-    query[dict_entry] = query.get(dict_entry, 0) + 1
-    if predict(date[0]) == 2:
-        ref_ans, stud_ans = utils.decode(date[0], tokenizer, mode='list')
-        adversaries[date[1]].append(stud_ans)
-        successes[dict_entry] = successes.get(dict_entry, 0) + 1
-        print("Date nr. ", ctr, ", time passed: ", time.time() - start)
-        ctr += 1
-print("Done after ", time.time() - start, " seconds.")
-np.save("results/bert/sciEntsBank/query.npy", query)
-np.save("results/bert/sciEntsBank/adversarial_successes", successes)
-np.save("results/bert/sciEntsBank/adversaries.npy", adversaries)
+# attack("models/msrpc_bert_epoch=2-val_macro=0.8393.ckpt", "results/bert/msrpc/attack_data.npy", 'bert')
+# attack("models/msrpc_T5_epoch=2-val_macro=0.8696.ckpt", "results/T5/msrpc/attack_data.npy", 'T5')
+# attack("models/rte_bert_epoch=5-val_macro=0.6986.ckpt", "results/bert/rte/attack_data.npy", 'bert')
+# attack("models/rte_T5_epoch=3-val_macro=0.7185.ckpt", "results/T5/rte/attack_data.npy", 'T5')
+attack("models/seb_bert_epoch=2-val_macro=0.7489.ckpt", "results/bert/seb/attack_data.npy", 'bert')

@@ -1,65 +1,128 @@
 import torch
 import numpy as np
-from lit_BERT import LitBERT
+from lit_Model import LitBERT, LitT5
 import spacy
 import time
 import utils
+import tqdm
+from transformers import T5Tokenizer, BertTokenizer
 device = torch.device("cuda")
 
 nlp = spacy.load('en_core_web_sm')
-words = np.load("top_adjectives_adverbs.npy", allow_pickle=True)
-adverbs = words.item()['ADV']
-adjectives = words.item()['ADJ']
-attack_data = []
-
-
-def to_torch(x):
-    return torch.tensor(x).unsqueeze(0)
-
-
-def insert_word(word, x, j, tokenizer, ref_answer):
-    """
-    Inserts an adverb/adjective at specific place in a sentence
-    :param ref_answer: reference answer as string
-    :param word: string, adverb or adjective
-    :param x: sentence/sequence preprocessed by spacy
-    :param j: integer/index, where param word gets inserted
-    :param tokenizer: huggingface tokenizer
-    :return: preprocessed data of adversarial sequence
-    """
-    adversarial_ans = x[:j].text + ' ' + word + ' ' + x[j:].text
-    new_tokens = tokenizer(ref_answer, adversarial_ans, max_length=128, padding='max_length')
-    return new_tokens
 
 
 
 
+def prepare_attack(path, data_path, mode):
 
-# Load checkpoint and get necessary objects
-checkpoint = LitBERT.load_from_checkpoint("models/seb_bert_epoch=4-val_macro=0.7680.ckpt")
-model = checkpoint.model
-model.cuda()
-model.eval()
-tokenizer = checkpoint.tokenizer
-# only get incorrect data instances
-val_data = torch.load('datasets/preprocessed/bert/sciEntsBank/correct.pt')
-val_data = [x for x in val_data if x[3] == 0]
-attack_data = []
-start = time.time()
-for date in val_data:
-    ref_ans, stud_ans = utils.decode(date[0], tokenizer)
-    pos_tagged = nlp(stud_ans)
-    adv_idx = [x for x in range(len(pos_tagged)) if pos_tagged[x].pos_ == 'VERB']
-    adj_idx = [x for x in range(len(pos_tagged)) if pos_tagged[x].pos_ == ('NOUN' or 'PROPN' or 'PRON')]
-    for i in adv_idx:
-        for adverb in adverbs:
-            tokens = insert_word(adverb, pos_tagged, i, tokenizer, ref_ans)
-            attack_data.append([tokens, stud_ans, adverb, 'ADV'])
 
-    for j in adj_idx:
-        for adjective in adjectives:
-            tokens = insert_word(adverb, pos_tagged, i, tokenizer, ref_ans)
-            attack_data.append([tokens, stud_ans, adjective, 'ADJ'])
 
-print("Done after ", time.time() - start, " seconds.")
-np.save("datasets/preprocessed/bert/sciEntsBank/attack_data.npy", attack_data, allow_pickle=True)
+    def insert_word(word, x, j, tokenizer, ref_answer, btw=''):
+        """
+        Inserts an adverb/adjective at specific place in a sentence
+        :param ref_answer: reference answer as string
+        :param word: string, adverb or adjective
+        :param x: sentence/sequence preprocessed by spacy
+        :param j: integer/index, where param word gets inserted
+        :param tokenizer: huggingface tokenizer
+        :return: preprocessed data of adversarial sequence
+        """
+        adversarial_ans = x[:j].text + ' ' + word + ' ' + x[j:].text
+        if mode == 'bert':
+            new_tokens = tokenizer(ref_answer, adversarial_ans, max_length=128, padding='max_length')
+        if mode == 'T5':
+            new_tokens = tokenizer(ref_answer + tokenizer.eos_token + btw + adversarial_ans + tokenizer.eos_token,
+                                   max_length=128, padding='max_length')
+        return new_tokens
+
+
+    # Load adj and adv
+    words = np.load("top_adjectives_adverbs.npy", allow_pickle=True)
+    adverbs = words.item()['ADV']
+    adjectives = words.item()['ADJ']
+
+    if mode == 'bert':
+
+        tokenizer = BertTokenizer.from_pretrained('bert-base-uncased')
+        data = np.load(data_path, allow_pickle=True).item()
+        attack_data = {"label": data['label'], 'data': []}
+
+
+        for i in tqdm.tqdm(range(len(data['data'])), desc='Preparing attack data'):
+
+            text, confidence = data['data'][i]
+            if len(text) == 2:
+                ref, mod = text
+            else:
+                print('what')
+                continue
+            pos_tagged = nlp(mod)
+            adv_idx = [x for x in range(len(pos_tagged)) if pos_tagged[x].pos_ == 'VERB']
+            adj_idx = [x for x in range(len(pos_tagged)) if pos_tagged[x].pos_ == ('NOUN' or 'PROPN' or 'PRON')]
+            for a in adv_idx:
+                for adverb in adverbs:
+                    tokens = insert_word(adverb, pos_tagged, a, tokenizer, ref)
+                    attack_data['data'].append({
+                        "input": tokens,
+                        "original": ''.join(text),
+                        "inserted": adverb,
+                        "insert_type": 'ADV',
+                        "confidence": confidence})
+
+            for b in adj_idx:
+                for adjective in adjectives:
+                    tokens = insert_word(adjective, pos_tagged, b, tokenizer, ref)
+                    attack_data['data'].append({
+                        "input": tokens,
+                        "original": ''.join(text),
+                        "inserted": adjective,
+                        "insert_type": 'ADJ',
+                        "confidence": confidence})
+
+
+        np.save(data_path.rsplit('/', 1)[0] + '/attack_data.npy', attack_data, allow_pickle=True)
+    if mode == 'T5':
+
+        tokenizer = T5Tokenizer.from_pretrained('t5-base')
+        data = np.load(data_path, allow_pickle=True).item()
+        attack_data = {"label": data['label'], 'data': []}
+
+        for i in tqdm.tqdm(range(len(data['data'])), desc='Preparing attack data'):
+            if len(data['data'][i]) == 3:
+                ref, btw, mod = data['data'][i]
+            else:
+                print('what')
+                continue
+
+            pos_tagged = nlp(mod)
+            adv_idx = [x for x in range(len(pos_tagged)) if pos_tagged[x].pos_ == 'VERB']
+            adj_idx = [x for x in range(len(pos_tagged)) if pos_tagged[x].pos_ == ('NOUN' or 'PROPN' or 'PRON')]
+            for a in adv_idx:
+                for adverb in adverbs:
+                    tokens = insert_word(adverb, pos_tagged, a, tokenizer, ref, btw=btw)
+                    attack_data['data'].append({
+                        "input": tokens,
+                        "original": ''.join(data['data'][i]),
+                        "inserted": adverb,
+                        "insert_type": 'ADV',
+                        })
+
+            for b in adj_idx:
+                for adjective in adjectives:
+                    tokens = insert_word(adjective, pos_tagged, b, tokenizer, ref, btw=btw)
+                    attack_data['data'].append({
+                        "input": tokens,
+                        "original": ''.join(data['data'][i]),
+                        "inserted": adjective,
+                        "insert_type": 'ADJ',
+                        })
+
+        np.save(data_path.rsplit('/', 1)[0] + '/attack_data.npy', attack_data, allow_pickle=True)
+
+
+
+# prepare_attack("models/msrpc_bert_epoch=2-val_macro=0.8393.ckpt", "results/bert/msrpc/data.npy", 'bert')
+# prepare_attack("models/msrpc_T5_epoch=2-val_macro=0.8696.ckpt", "results/T5/msrpc/data.npy", 'T5')
+# prepare_attack("models/rte_bert_epoch=5-val_macro=0.6986.ckpt", "results/bert/rte/data.npy", 'bert')
+# prepare_attack("models/rte_T5_epoch=3-val_macro=0.7185.ckpt", "results/T5/rte/data.npy", 'T5')
+prepare_attack("models/seb_bert_epoch=2-val_macro=0.7489.ckpt", "results/bert/seb/data.npy", 'bert')
