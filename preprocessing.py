@@ -210,7 +210,7 @@ preprocess_wic('datasets/raw/WiC/val.jsonl', 'datasets/preprocessed/bert/wic/dev
 
 
 # T5
-
+"""
 # preprocess seb for T5
 preprocess_seb('datasets/raw/sciEntsBank_training', 'datasets/preprocessed/T5/seb/train', 'T5')
 preprocess_seb('datasets/raw/sciEntsBank_testing/test-unseen-answers', 'datasets/preprocessed/T5/seb/test_ua', 'T5')
@@ -241,4 +241,4 @@ preprocess_RTE('datasets/raw/RTE/dev.tsv', 'datasets/preprocessed/T5/RTE/dev', '
 # preprocess WiC for T5
 preprocess_wic('datasets/raw/WiC/train.jsonl', 'datasets/preprocessed/T5/wic/train', 'T5')
 preprocess_wic('datasets/raw/WiC/val.jsonl', 'datasets/preprocessed/T5/wic/dev', 'T5')
-
+"""

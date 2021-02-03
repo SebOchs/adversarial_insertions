@@ -6,7 +6,7 @@ import numpy as np
 import os
 
 
-def save_correct_incorrect_predictions(path, mode, label=0, testdata=''):
+def save_correct_incorrect_predictions(path, mode, label=0, testdata='', to_predict=''):
     data_collector = {}
     device = torch.device("cuda")
     # Load checkpoint and get necessary objects
@@ -46,6 +46,10 @@ def save_correct_incorrect_predictions(path, mode, label=0, testdata=''):
 
     if mode == 'T5':
         checkpoint = LitT5.load_from_checkpoint(path)
+        if path.find('wic') != -1:
+            splitter = 3
+        else:
+            splitter = 2
         if len(testdata) > 0:
             test_set = MyT5Dataset(testdata)
         else:
@@ -67,10 +71,16 @@ def save_correct_incorrect_predictions(path, mode, label=0, testdata=''):
                            for x in model.generate(input_ids=text, attention_mask=attn)]
                 correct_guesses_idx = (np.array(results) == label).nonzero()[0].tolist()
                 # remove data without second part when first part is too long
-                split_input = [tokenizer.decode(x).split(tokenizer.eos_token)[:2] for x in i[0][correct_guesses_idx]
-                               if len(tokenizer.decode(x).split(tokenizer.eos_token)[:2]) == 2]
-                correct_guesses.append([[split_input[x][0], split_input[x][1].split(':', 1)[0] + ':',
-                                         split_input[x][1].split(':', 1)[1]] for x in range(len(split_input))])
+                split_input = [tokenizer.decode(x).split(tokenizer.eos_token)[:-1] for x in i[0][correct_guesses_idx]
+                               if len(tokenizer.decode(x).split(tokenizer.eos_token)[:-1]) == splitter]
+                if splitter == 3:
+                    correct_guesses.append([[split_input[x][0], split_input[x][1] + split_input[x][2].split(':', 1)[0],
+                                             split_input[x][2].split(':', 1)[1]] for x in range(len(split_input))])
+
+                else:
+                    correct_guesses.append([[split_input[x][0], split_input[x][1].split(':', 1)[0] + ':',
+                                             split_input[x][1].split(':', 1)[1]] for x in range(len(split_input))])
+
 
             data_collector['data'] = [correct_guesses[x][y] for x in range(len(correct_guesses)) for y in
                                       range(len(correct_guesses[x]))]
@@ -79,9 +89,18 @@ def save_correct_incorrect_predictions(path, mode, label=0, testdata=''):
             os.makedirs(where_to_save, exist_ok=True)
             np.save(where_to_save + '/data.npy', data_collector, allow_pickle=True)
 
+"""
+save_correct_incorrect_predictions("models/msrpc_bert_epoch=2-val_macro=0.8393.ckpt", 'bert')
+save_correct_incorrect_predictions("models/msrpc_T5_epoch=2-val_macro=0.8696.ckpt", 'T5', label='False')
+save_correct_incorrect_predictions("models/rte_bert_epoch=5-val_macro=0.6986.ckpt", 'bert')
+save_correct_incorrect_predictions("models/rte_T5_epoch=7-val_macro=0.7243.ckpt", 'T5', label='False')
 
-# save_correct_incorrect_predictions("models/msrpc_bert_epoch=2-val_macro=0.8393.ckpt", 'bert')
-# save_correct_incorrect_predictions("models/msrpc_T5_epoch=2-val_macro=0.8696.ckpt", 'T5', label='False')
-# save_correct_incorrect_predictions("models/rte_bert_epoch=5-val_macro=0.6986.ckpt", 'bert')
-# save_correct_incorrect_predictions("models/rte_T5_epoch=3-val_macro=0.7185.ckpt", 'T5', label='False')
-save_correct_incorrect_predictions("models/seb_bert_epoch=2-val_macro=0.7489.ckpt", 'bert')
+save_correct_incorrect_predictions("models/seb_bert_epoch=2-val_macro=0.7489.ckpt", 'bert',
+                                   testdata='datasets/preprocessed/bert/seb/test_ud.npy')
+"""
+save_correct_incorrect_predictions("models/seb_T5_epoch=6-val_macro=0.7449.ckpt", 'T5', label='incorrect', testdata='datasets/preprocessed/T5/seb/test_ud.npy')
+"""
+save_correct_incorrect_predictions("models/wic_bert_epoch=2-val_macro=0.8066.ckpt", 'bert')
+
+save_correct_incorrect_predictions("models/wic_T5_epoch=5-val_macro=0.7680.ckpt", 'T5', label='False')
+"""

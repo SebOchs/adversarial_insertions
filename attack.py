@@ -90,9 +90,16 @@ def attack(path, attack_data, mode, goal=None):
                                                                  .split(ckpt.tokenizer.pad_token)[0]})
         np.save(attack_data.rsplit('/', 1)[0] + '/attack_results.npy', data_collector, allow_pickle=True)
 
+"""
+attack("models/msrpc_bert_epoch=2-val_macro=0.8393.ckpt", "results/bert/msrpc/attack_data.npy", 'bert')
+attack("models/rte_bert_epoch=5-val_macro=0.6986.ckpt", "results/bert/rte/attack_data.npy", 'bert')
 
-# attack("models/msrpc_bert_epoch=2-val_macro=0.8393.ckpt", "results/bert/msrpc/attack_data.npy", 'bert')
-# attack("models/msrpc_T5_epoch=2-val_macro=0.8696.ckpt", "results/T5/msrpc/attack_data.npy", 'T5')
-# attack("models/rte_bert_epoch=5-val_macro=0.6986.ckpt", "results/bert/rte/attack_data.npy", 'bert')
-# attack("models/rte_T5_epoch=3-val_macro=0.7185.ckpt", "results/T5/rte/attack_data.npy", 'T5')
 attack("models/seb_bert_epoch=2-val_macro=0.7489.ckpt", "results/bert/seb/attack_data.npy", 'bert')
+attack("models/wic_bert_epoch=2-val_macro=0.8066.ckpt", "results/bert/wic/attack_data.npy", 'bert')
+
+# attack("models/msrpc_T5_epoch=2-val_macro=0.8696.ckpt", "results/T5/msrpc/attack_data.npy", 'T5')
+
+attack("models/wic_T5_epoch=5-val_macro=0.7680.ckpt", "results/T5/wic/attack_data.npy", 'T5')
+attack("models/rte_T5_epoch=7-val_macro=0.7243.ckpt", "results/T5/rte/attack_data.npy", 'T5')
+"""
+attack("models/seb_T5_epoch=6-val_macro=0.7449.ckpt", "results/T5/seb/attack_data.npy", 'T5')

@@ -12,5 +12,5 @@ def analyze(path):
     print('test')
 
 
-analyze('results/bert/msrpc')
+analyze('results/bert/seb')
 

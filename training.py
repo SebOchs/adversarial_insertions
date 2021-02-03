@@ -47,21 +47,21 @@ def training(data_set_name, training_set, test_set, mode, batch_size=8, lr=0.000
 # training("mnli", "datasets/preprocessed/bert/MNLI/train.npy", "datasets/preprocessed/bert/MNLI/dev_mm.npy", 'bert',
 #         batch_size=64, precision=True, accumulate_grad=1, ddp=
 # Server training
-"""
+
 training("mnli", "datasets/preprocessed/T5/MNLI/train.npy", "datasets/preprocessed/T5/MNLI/dev_mm.npy", 'T5',
          batch_size=16, accumulate_grad=4,
          ddp=True
          )
-"""
+
 # qqp
 training("qqp", "datasets/preprocessed/bert/qqp/train.npy", "datasets/preprocessed/bert/qqp/dev.npy", 'bert',
          batch_size=64, precision=True, accumulate_grad=1, ddp=True, labels=2)
-"""
+
 training("qqp", "datasets/preprocessed/T5/qqp/train.npy", "datasets/preprocessed/T5/qqp/dev.npy", 'T5',
          batch_size=16, accumulate_grad=4,
          ddp=True
          )
-"""
+
 
 # msrpc
 training("msrpc", "datasets/preprocessed/bert/MSpara/train.npy", "datasets/preprocessed/bert/MSpara/test.npy", 'bert',
@@ -76,10 +76,10 @@ training("msrpc", "datasets/preprocessed/T5/MSpara/train.npy", "datasets/preproc
 training("rte", "datasets/preprocessed/bert/RTE/train.npy", "datasets/preprocessed/bert/RTE/dev.npy", 'bert',
          batch_size=32, accumulate_grad=1, labels=2, lr=0.00001)
 
-"""
+
 training("rte", "datasets/preprocessed/T5/RTE/train.npy", "datasets/preprocessed/T5/RTE/dev.npy", 'T5',
          batch_size=8, accumulate_grad=8)
-"""
+
 training("wic", "datasets/preprocessed/bert/wic/train.npy", "datasets/preprocessed/bert/wic/dev.npy", 'bert',
          batch_size=16, accumulate_grad=1, labels=2)
 
@@ -87,3 +87,6 @@ training("wic", "datasets/preprocessed/bert/wic/train.npy", "datasets/preprocess
 training("seb", "datasets/preprocessed/bert/seb/train.npy", "datasets/preprocessed/bert/seb/test_ua.npy", 'bert',
          batch_size=32, accumulate_grad=1, labels=3)
 """
+
+training("wic", "datasets/preprocessed/T5/wic/train.npy", "datasets/preprocessed/T5/wic/dev.npy", "T5",
+          batch_size=16, accumulate_grad=1)
