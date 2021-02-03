@@ -104,7 +104,7 @@ attack("models/rte_T5_epoch=7-val_macro=0.7243.ckpt", "results/T5/rte/attack_dat
 attack("models/seb_T5_epoch=6-val_macro=0.7449.ckpt", "results/T5/seb/attack_data.npy", 'T5')
 """
 attack("models/mnli_bert_epoch=1-val_macro=0.8304.ckpt", "results/bert/mnli/attack_data_dev_m.npy", 'bert',
-       name='matched_attack_results.npy', goal='correct')
+       name='matched_attack_results.npy', goal=2)
 attack("models/mnli_bert_epoch=1-val_macro=0.8304.ckpt", "results/bert/mnli/attack_data_dev_mm.npy", 'bert',
-                                   name='mismatched_attack_results.npy', goal='correct')
+                                   name='mismatched_attack_results.npy', goal=2)
 # attack("models/qqp_bert_epoch=4-val_macro=0.9037.ckpt", "results/bert/qqp/attack_data.npy", 'bert')
