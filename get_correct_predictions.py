@@ -97,9 +97,9 @@ def save_correct_incorrect_predictions(path, mode, label=0, testdata='', to_pred
 """
 save_correct_incorrect_predictions("models/msrpc_bert_epoch=2-val_macro=0.8393.ckpt", 'bert')
 save_correct_incorrect_predictions("models/msrpc_T5_epoch=2-val_macro=0.8696.ckpt", 'T5', label='False')
-"""
+
 save_correct_incorrect_predictions("models/rte_bert_epoch=5-val_macro=0.6986.ckpt", 'bert')
-"""
+
 save_correct_incorrect_predictions("models/rte_T5_epoch=7-val_macro=0.7243.ckpt", 'T5', label='False')
 
 save_correct_incorrect_predictions("models/seb_bert_epoch=2-val_macro=0.7489.ckpt", 'bert',
