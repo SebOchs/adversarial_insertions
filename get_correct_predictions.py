@@ -114,4 +114,6 @@ save_correct_incorrect_predictions("models/wic_T5_epoch=5-val_macro=0.7680.ckpt"
 save_correct_incorrect_predictions("models/mnli_bert_epoch=1-val_macro=0.8304.ckpt", 'bert')
 save_correct_incorrect_predictions("models/mnli_bert_epoch=1-val_macro=0.8304.ckpt", 'bert',
                                    testdata='datasets/preprocessed/bert/MNLI/dev_mm.npy')
+"""
 save_correct_incorrect_predictions("models/qqp_bert_epoch=4-val_macro=0.9037.ckpt", 'bert')
+"""
