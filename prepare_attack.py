@@ -83,7 +83,7 @@ def prepare_attack(path, data_path, mode, name='attack_data'):
                         "confidence": confidence})
 
 
-        np.save(data_path.rsplit('/', 1)[0] + name, attack_data, allow_pickle=True)
+        np.save(data_path.rsplit('/', 1)[0] + '/' + name, attack_data, allow_pickle=True)
     if mode == 'T5':
 
         tokenizer = T5Tokenizer.from_pretrained('t5-base')
@@ -120,7 +120,7 @@ def prepare_attack(path, data_path, mode, name='attack_data'):
                         "insert_type": 'ADJ',
                         })
 
-        np.save(data_path.rsplit('/', 1)[0] + name + '.npy', attack_data, allow_pickle=True)
+        np.save(data_path.rsplit('/', 1)[0] + '/' + name + '.npy', attack_data, allow_pickle=True)
 
 
 """

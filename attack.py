@@ -52,7 +52,7 @@ def attack(path, attack_data, mode, goal=None, name='attack_results.npy'):
                                                                   'confidence': data_instance['confidence'],
                                                                   'adversary': ckpt.tokenizer.decode(batch.input_ids)
                                                                  .split(ckpt.tokenizer.pad_token)[0]})
-        np.save(attack_data.rsplit('/', 1)[0] + name, data_collector, allow_pickle=True)
+        np.save(attack_data.rsplit('/', 1)[0] + '/' + name, data_collector, allow_pickle=True)
 
     if mode == 'T5':
         ckpt = LitT5.load_from_checkpoint(path)
@@ -88,7 +88,7 @@ def attack(path, attack_data, mode, goal=None, name='attack_results.npy'):
                                                                   'adversary':
                                                                       ckpt.tokenizer.decode(batch.input_ids)
                                                                  .split(ckpt.tokenizer.pad_token)[0]})
-        np.save(attack_data.rsplit('/', 1)[0] + name, data_collector, allow_pickle=True)
+        np.save(attack_data.rsplit('/', 1)[0] + '/' +name, data_collector, allow_pickle=True)
 
 """
 attack("models/msrpc_bert_epoch=2-val_macro=0.8393.ckpt", "results/bert/msrpc/attack_data.npy", 'bert')
@@ -107,4 +107,4 @@ attack("models/mnli_bert_epoch=1-val_macro=0.8304.ckpt", "results/bert/mnli/atta
        name='matched_attack_results.npy', goal='correct')
 attack("models/mnli_bert_epoch=1-val_macro=0.8304.ckpt", "results/bert/mnli/attack_data_dev_mm.npy", 'bert',
                                    name='mismatched_attack_results.npy', goal='correct')
-attack("models/qqp_bert_epoch=4-val_macro=0.9037.ckpt", "results/bert/qqp/attack_data.npy", 'bert')
+# attack("models/qqp_bert_epoch=4-val_macro=0.9037.ckpt", "results/bert/qqp/attack_data.npy", 'bert')
