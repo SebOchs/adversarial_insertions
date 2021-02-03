@@ -13,7 +13,7 @@ nlp = spacy.load('en_core_web_sm')
 
 
 
-def prepare_attack(path, data_path, mode):
+def prepare_attack(path, data_path, mode, name):
 
 
 
@@ -120,7 +120,7 @@ def prepare_attack(path, data_path, mode):
                         "insert_type": 'ADJ',
                         })
 
-        np.save(data_path.rsplit('/', 1)[0] + '/attack_data.npy', attack_data, allow_pickle=True)
+        np.save(data_path.rsplit('/', 1)[0] + name + '.npy', attack_data, allow_pickle=True)
 
 
 """
@@ -129,9 +129,15 @@ prepare_attack("models/msrpc_T5_epoch=2-val_macro=0.8696.ckpt", "results/T5/msrp
 prepare_attack("models/rte_bert_epoch=5-val_macro=0.6986.ckpt", "results/bert/rte/data.npy", 'bert')
 prepare_attack("models/rte_T5_epoch=7-val_macro=0.7243.ckpt", "results/T5/rte/data.npy", 'T5')
 prepare_attack("models/seb_bert_epoch=2-val_macro=0.7489.ckpt", "results/bert/seb/data.npy", 'bert')
-"""
+
 prepare_attack("models/seb_T5_epoch=6-val_macro=0.7449.ckpt", "results/T5/seb/data.npy", 'T5')
-"""
+
 prepare_attack("models/wic_bert_epoch=2-val_macro=0.8066.ckpt", "results/bert/wic/data.npy", 'bert')
 prepare_attack("models/wic_T5_epoch=5-val_macro=0.7680.ckpt", "results/T5/wic/data.npy", 'T5')
 """
+prepare_attack("models/mnli_bert_epoch=1-val_macro=0.8304.ckpt", "results/bert/mnli/original_data.npy", 'bert',
+                                   'attack_data_dev_m')
+prepare_attack("models/mnli_bert_epoch=1-val_macro=0.8304.ckpt", "results/bert/mnli/other_data.npy", 'bert',
+                                   'attack_data_dev_mm')
+prepare_attack("models/qqp_bert_epoch=4-val_macro=0.9037.ckpt", "results/bert/qqp/other_data.npy", 'bert', 'attack_data')
+
