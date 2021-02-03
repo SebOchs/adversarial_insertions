@@ -13,7 +13,7 @@ nlp = spacy.load('en_core_web_sm')
 
 
 
-def prepare_attack(path, data_path, mode, name):
+def prepare_attack(path, data_path, mode, name='attack_data'):
 
 
 
@@ -136,8 +136,8 @@ prepare_attack("models/wic_bert_epoch=2-val_macro=0.8066.ckpt", "results/bert/wi
 prepare_attack("models/wic_T5_epoch=5-val_macro=0.7680.ckpt", "results/T5/wic/data.npy", 'T5')
 """
 prepare_attack("models/mnli_bert_epoch=1-val_macro=0.8304.ckpt", "results/bert/mnli/original_data.npy", 'bert',
-                                   'attack_data_dev_m')
+                                   name='attack_data_dev_m')
 prepare_attack("models/mnli_bert_epoch=1-val_macro=0.8304.ckpt", "results/bert/mnli/other_data.npy", 'bert',
-                                   'attack_data_dev_mm')
-prepare_attack("models/qqp_bert_epoch=4-val_macro=0.9037.ckpt", "results/bert/qqp/other_data.npy", 'bert', 'attack_data')
+                                   name='attack_data_dev_mm')
+prepare_attack("models/qqp_bert_epoch=4-val_macro=0.9037.ckpt", "results/bert/qqp/other_data.npy", 'bert')
 
