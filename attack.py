@@ -1,9 +1,6 @@
 import torch
 import numpy as np
 from lit_Model import LitBERT, LitT5
-import spacy
-import time
-import utils
 import tqdm
 
 device = torch.device("cuda")
@@ -90,3 +87,5 @@ def attack(path, attack_data, mode, goal=None, name='attack_results.npy'):
                                                                  .split(ckpt.tokenizer.pad_token)[0]})
         np.save(attack_data.rsplit('/', 1)[0] + '/' + name, data_collector, allow_pickle=True)
 
+
+attack("models/mnli_bert_epoch=1-val_macro=0.8304.ckpt", "results/bert/mnli/matched/attack_data.npy", 'bert', goal=2)
