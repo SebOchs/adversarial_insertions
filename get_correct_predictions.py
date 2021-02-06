@@ -97,4 +97,4 @@ def save_correct_incorrect_predictions(path, mode, label=0, testdata='', to_pred
 
 
 save_correct_incorrect_predictions("models/mnli_bert_epoch=1-val_macro=0.8304.ckpt", 'bert',
-                                   testdata="datasets/preprocessed/bert/mnli/dev_m")
+                                   testdata="datasets/preprocessed/bert/mnli/dev_m.npy")
