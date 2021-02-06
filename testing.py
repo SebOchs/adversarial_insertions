@@ -5,28 +5,21 @@ from torch.utils.data import DataLoader
 import torch
 
 
-def testing(checkpoint, mode, test_dataloaders=[]):
+def testing(checkpoint, mode, test_dataloader=''):
     if mode == 'bert':
         model = LitBERT.load_from_checkpoint(checkpoint)
-        if len(test_dataloaders) > 0:
-            tests = []
-            for test in test_dataloaders:
-                tests.append(DataLoader(MyBertDataset(test)))
-        else:
-            tests = [model.test_dataloader()]
     if mode == 'T5':
         model = LitT5.load_from_checkpoint(checkpoint)
-        if len(test_dataloaders) > 0:
-            tests = []
-            for test in test_dataloaders:
-                tests.append(DataLoader(MyT5Dataset(test)))
-        else:
-            tests = [model.test_dataloader()]
+
 
     model.eval()
     model.freeze()
     trainer = pl.Trainer(gpus=1)
-    trainer.test(model, test_dataloaders=tests)
+    if len(test_dataloader) > 0:
+        test = DataLoader(MyT5Dataset(test_dataloader))
+        trainer.test(model, test_dataloaders=test)
+    else:
+        trainer.test(model)
 
 
-testing('models/msrpc_bert_epoch=2-val_macro=0.8393.ckpt', 'bert')
+testing('models/mnli_bert_epoch=1-val_macro=0.8304.ckpt', 'bert')

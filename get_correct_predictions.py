@@ -86,34 +86,15 @@ def save_correct_incorrect_predictions(path, mode, label=0, testdata='', to_pred
 
             data_collector['data'] = [correct_guesses[x][y] for x in range(len(correct_guesses)) for y in
                                       range(len(correct_guesses[x]))]
-            data_collector['accuracy'] = len(correct_guesses) / len(sub_set)
+            data_collector['accuracy'] = len(data_collector['data']) / len(sub_set)
+            print(data_collector['accuracy'])
             where_to_save = 'results/' + path.split('/')[1].split('_')[1] + '/' + path.split('/')[1].split('_')[0]
             os.makedirs(where_to_save, exist_ok=True)
-            if len(testdata) > 0:
+            if len(testdata) == 0:
                 np.save(where_to_save + '/original_data.npy', data_collector, allow_pickle=True)
             else:
-                np.save(where_to_save + '/other_data.npy', data_collector, allow_pickle=True)
+                np.save(where_to_save + '/data.npy', data_collector, allow_pickle=True)
 
-"""
-save_correct_incorrect_predictions("models/msrpc_bert_epoch=2-val_macro=0.8393.ckpt", 'bert')
-save_correct_incorrect_predictions("models/msrpc_T5_epoch=2-val_macro=0.8696.ckpt", 'T5', label='False')
 
-save_correct_incorrect_predictions("models/rte_bert_epoch=5-val_macro=0.6986.ckpt", 'bert')
-
-save_correct_incorrect_predictions("models/rte_T5_epoch=7-val_macro=0.7243.ckpt", 'T5', label='False')
-
-save_correct_incorrect_predictions("models/seb_bert_epoch=2-val_macro=0.7489.ckpt", 'bert',
-                                   testdata='datasets/preprocessed/bert/seb/test_ud.npy')
-
-save_correct_incorrect_predictions("models/seb_T5_epoch=6-val_macro=0.7449.ckpt", 'T5', label='incorrect', testdata='datasets/preprocessed/T5/seb/test_ud.npy')
-
-save_correct_incorrect_predictions("models/wic_bert_epoch=2-val_macro=0.8066.ckpt", 'bert')
-
-save_correct_incorrect_predictions("models/wic_T5_epoch=5-val_macro=0.7680.ckpt", 'T5', label='False')
-"""
-save_correct_incorrect_predictions("models/mnli_bert_epoch=1-val_macro=0.8304.ckpt", 'bert')
 save_correct_incorrect_predictions("models/mnli_bert_epoch=1-val_macro=0.8304.ckpt", 'bert',
-                                   testdata='datasets/preprocessed/bert/MNLI/dev_mm.npy')
-"""
-save_correct_incorrect_predictions("models/qqp_bert_epoch=4-val_macro=0.9037.ckpt", 'bert')
-"""
+                                   testdata="datasets/preprocessed/MNLI/dev_m")

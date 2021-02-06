@@ -134,11 +134,17 @@ prepare_attack("models/seb_T5_epoch=6-val_macro=0.7449.ckpt", "results/T5/seb/da
 
 prepare_attack("models/wic_bert_epoch=2-val_macro=0.8066.ckpt", "results/bert/wic/data.npy", 'bert')
 prepare_attack("models/wic_T5_epoch=5-val_macro=0.7680.ckpt", "results/T5/wic/data.npy", 'T5')
-"""
+
 prepare_attack("models/mnli_bert_epoch=1-val_macro=0.8304.ckpt", "results/bert/mnli/original_data.npy", 'bert',
                                    name='attack_data_dev_m')
 prepare_attack("models/mnli_bert_epoch=1-val_macro=0.8304.ckpt", "results/bert/mnli/other_data.npy", 'bert',
                                    name='attack_data_dev_mm')
-
+"""
+prepare_attack("models/seb_T5_epoch=6-val_macro=0.7449.ckpt", "results/T5/seb/ua/data.npy", 'T5')
+prepare_attack("models/seb_T5_epoch=6-val_macro=0.7449.ckpt", "results/T5/seb/uq/data.npy", 'T5')
+prepare_attack("models/seb_T5_epoch=6-val_macro=0.7449.ckpt", "results/T5/seb/ud/data.npy", 'T5')
+prepare_attack("models/wic_T5_epoch=3-val_macro=0.7066.ckpt", "results/T5/wic/data.npy", 'T5')
+prepare_attack("models/rte_T5_epoch=5-val_macro=0.7054.ckpt", "results/T5/rte/data.npy", 'T5')
+prepare_attack("models/msrpc_T5_epoch=2-val_macro=0.8696.ckpt", "results/T5/msrpc/data.npy", 'T5')
 
 

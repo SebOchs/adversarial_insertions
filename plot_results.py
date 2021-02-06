@@ -16,10 +16,15 @@ def plot(result_path, attack_data, mode):
             for i in range(results['confidence'][key]):
                 hist_data.append(key)
         fig, ax = plt.subplots()
-        ax.hist(hist_data, bins=10, color='#005aa9')
+        ax.hist(hist_data, bins=[0.35, 0.45, 0.55, 0.65, 0.75, 0.85, 0.95, 1.0],
+                color='#005aa9')
         ax.set_xlabel('confidence score')
         ax.set_ylabel('# of adversaries')
-        ax.set_title(' '.join(result_path.split('/')[1:3]))
+        if len(result_path.split('/')) > 4:
+            title = ' '.join(result_path.split('/')[1:4])
+        else:
+            title = ' '.join(result_path.split('/')[1:3])
+        ax.set_title(title)
         plt.savefig(result_path.rsplit('/', 1)[0] + '/confidence.png', dpi=300)
         ax.clear()
         fig.clear()
@@ -111,8 +116,9 @@ def plot(result_path, attack_data, mode):
         np.save(result_path.rsplit('/', 1)[0] + '/reading.npy', reading, allow_pickle=True)
 
 
-# plot('results/bert/msrpc/attack_results.npy', 'results/bert/msrpc/data.npy', 'bert')
-# plot('results/T5/msrpc/attack_results.npy', 'results/T5/msrpc/data.npy', 'T5')
-# plot('results/bert/rte/attack_results.npy', 'results/bert/rte/data.npy', 'bert')
-# plot('results/T5/rte/attack_results.npy', 'results/T5/rte/data.npy', 'T5')
-plot('results/bert/seb/attack_results.npy', 'results/bert/seb/data.npy', 'bert')
+plot('results/T5/seb/ua/attack_results.npy', 'results/T5/seb/ua/data.npy', 'T5')
+plot('results/T5/seb/uq/attack_results.npy', 'results/T5/seb/uq/data.npy', 'T5')
+plot('results/T5/seb/ud/attack_results.npy', 'results/T5/seb/ud/data.npy', 'T5')
+plot('results/T5/rte/attack_results.npy', 'results/T5/rte/data.npy', 'T5')
+plot('results/T5/wic/attack_results.npy', 'results/T5/wic/data.npy', 'T5')
+plot('results/T5/msrpc/attack_results.npy', 'results/T5/msrpc/data.npy', 'T5')

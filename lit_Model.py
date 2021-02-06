@@ -123,7 +123,7 @@ class LitT5(pl.LightningModule):
 
     def __init__(self, train, test, batch_size, val=''):
         super().__init__()
-        self.model = T5ForConditionalGeneration.from_pretrained('t5-base', n_positions=128)
+        self.model = T5ForConditionalGeneration.from_pretrained('t5-base')
         self.tokenizer = T5Tokenizer.from_pretrained('t5-base')
         self.batch_size = batch_size
         self.save_hyperparameters()

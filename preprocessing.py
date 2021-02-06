@@ -146,7 +146,7 @@ def preprocess_RTE(file_path, where_to_save, model):
                           label])
         if model == 'T5':
             label = tokenizer(str(bool(label_to_int(i[3]))), max_length=128, padding='max_length')
-            tokenized = tokenizer("rte: hypothesis: " + i[1] + tokenizer.eos_token + "premise: " + i[2], max_length=128,
+            tokenized = tokenizer("rte: reference: " + i[1] + tokenizer.eos_token + " answer: " + i[2], max_length=128,
                                   padding='max_length')
             array.append([tokenized.input_ids[:128], tokenized.attention_mask[:128], label.input_ids,
                           label.attention_mask])
@@ -210,13 +210,13 @@ preprocess_wic('datasets/raw/WiC/val.jsonl', 'datasets/preprocessed/bert/wic/dev
 
 
 # T5
-"""
+
 # preprocess seb for T5
 preprocess_seb('datasets/raw/sciEntsBank_training', 'datasets/preprocessed/T5/seb/train', 'T5')
 preprocess_seb('datasets/raw/sciEntsBank_testing/test-unseen-answers', 'datasets/preprocessed/T5/seb/test_ua', 'T5')
 preprocess_seb('datasets/raw/sciEntsBank_testing/test-unseen-domains', 'datasets/preprocessed/T5/seb/test_ud', 'T5')
 preprocess_seb('datasets/raw/sciEntsBank_testing/test-unseen-questions', 'datasets/preprocessed/T5/seb/test_uq', 'T5')
-"""
+
 # preprocess mnli for T5
 preprocess_mnli('datasets/raw/MNLI_matched/original/multinli_1.0_train.jsonl', 'datasets/preprocessed/T5/MNLI/train',
                 'T5')
@@ -233,12 +233,13 @@ preprocess_MSpara('datasets/raw/MSpara/msr_paraphrase_test.txt', 'datasets/prepr
 preprocess_QQP('datasets/raw/QQP/train.tsv', 'datasets/preprocessed/T5/qqp/train', 'T5')
 preprocess_QQP('datasets/raw/QQP/dev.tsv', 'datasets/preprocessed/T5/qqp/dev', 'T5')
 
-# preprocess RTE for T5
-preprocess_RTE('datasets/raw/RTE/train.tsv', 'datasets/preprocessed/T5/RTE/train', 'T5')
-preprocess_RTE('datasets/raw/RTE/dev.tsv', 'datasets/preprocessed/T5/RTE/dev', 'T5')
+
 
 
 # preprocess WiC for T5
 preprocess_wic('datasets/raw/WiC/train.jsonl', 'datasets/preprocessed/T5/wic/train', 'T5')
 preprocess_wic('datasets/raw/WiC/val.jsonl', 'datasets/preprocessed/T5/wic/dev', 'T5')
 """
+# preprocess RTE for T5
+preprocess_RTE('datasets/raw/RTE/train.tsv', 'datasets/preprocessed/T5/RTE/train', 'T5')
+preprocess_RTE('datasets/raw/RTE/dev.tsv', 'datasets/preprocessed/T5/RTE/dev', 'T5')

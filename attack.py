@@ -88,23 +88,5 @@ def attack(path, attack_data, mode, goal=None, name='attack_results.npy'):
                                                                   'adversary':
                                                                       ckpt.tokenizer.decode(batch.input_ids)
                                                                  .split(ckpt.tokenizer.pad_token)[0]})
-        np.save(attack_data.rsplit('/', 1)[0] + '/' +name, data_collector, allow_pickle=True)
+        np.save(attack_data.rsplit('/', 1)[0] + '/' + name, data_collector, allow_pickle=True)
 
-"""
-attack("models/msrpc_bert_epoch=2-val_macro=0.8393.ckpt", "results/bert/msrpc/attack_data.npy", 'bert')
-attack("models/rte_bert_epoch=5-val_macro=0.6986.ckpt", "results/bert/rte/attack_data.npy", 'bert')
-
-attack("models/seb_bert_epoch=2-val_macro=0.7489.ckpt", "results/bert/seb/attack_data.npy", 'bert')
-attack("models/wic_bert_epoch=2-val_macro=0.8066.ckpt", "results/bert/wic/attack_data.npy", 'bert')
-
-# attack("models/msrpc_T5_epoch=2-val_macro=0.8696.ckpt", "results/T5/msrpc/attack_data.npy", 'T5')
-
-attack("models/wic_T5_epoch=5-val_macro=0.7680.ckpt", "results/T5/wic/attack_data.npy", 'T5')
-attack("models/rte_T5_epoch=7-val_macro=0.7243.ckpt", "results/T5/rte/attack_data.npy", 'T5')
-attack("models/seb_T5_epoch=6-val_macro=0.7449.ckpt", "results/T5/seb/attack_data.npy", 'T5')
-"""
-attack("models/mnli_bert_epoch=1-val_macro=0.8304.ckpt", "results/bert/mnli/attack_data_dev_m.npy", 'bert',
-       name='matched_attack_results.npy', goal=2)
-attack("models/mnli_bert_epoch=1-val_macro=0.8304.ckpt", "results/bert/mnli/attack_data_dev_mm.npy", 'bert',
-                                   name='mismatched_attack_results.npy', goal=2)
-# attack("models/qqp_bert_epoch=4-val_macro=0.9037.ckpt", "results/bert/qqp/attack_data.npy", 'bert')

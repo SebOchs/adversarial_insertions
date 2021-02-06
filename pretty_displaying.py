@@ -1,13 +1,18 @@
 import numpy as np
-
+import random
 
 def pretty(path):
     data = np.load(path, allow_pickle=True).item()
+    xd = []
     for key, value in data.items():
-        print(key)
         for i in value:
-            print(i)
-    print('test')
+            x = key + ': ' +  i
+            xd.append(x)
+            print(x)
+    """
+    random.shuffle(xd)
+    for i in xd[:10]:
+        print(i)
+    """
 
-
-pretty('results/bert/rte/reading.npy')
+pretty('results/bert/seb/ua/reading.npy')

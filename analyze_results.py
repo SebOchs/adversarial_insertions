@@ -12,5 +12,9 @@ def analyze(path):
     print('test')
 
 
-analyze('results/bert/seb')
-
+analyze('results/T5/seb/ua')
+analyze('results/T5/seb/uq')
+analyze('results/T5/seb/ud')
+analyze('results/T5/rte')
+analyze('results/T5/wic')
+analyze('results/T5/msrpc')
