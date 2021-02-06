@@ -1,9 +1,6 @@
 import torch
 import numpy as np
-from lit_Model import LitBERT, LitT5
 import spacy
-import time
-import utils
 import tqdm
 from transformers import T5Tokenizer, BertTokenizer
 device = torch.device("cuda")
@@ -13,7 +10,7 @@ nlp = spacy.load('en_core_web_sm')
 
 
 
-def prepare_attack(path, data_path, mode, name='attack_data'):
+def prepare_attack(data_path, mode, name='attack_data'):
 
 
 
@@ -123,7 +120,7 @@ def prepare_attack(path, data_path, mode, name='attack_data'):
         np.save(data_path.rsplit('/', 1)[0] + '/' + name + '.npy', attack_data, allow_pickle=True)
 
 
-prepare_attack("models/mnli_bert_epoch=1-val_macro=0.8304.ckpt", "results/bert/mnli/matched/data.npy", 'bert')
+prepare_attack("results/bert/mnli/matched/data.npy", 'bert')
 
 
 
