@@ -10,13 +10,14 @@ def plot(result_path, attack_data, mode):
     reading = {}
     data_collector = {}
     if mode == 'bert':
+        print(result_path)
         # histogram
         hist_data = []
         for key in list(results['confidence'].keys()):
             for i in range(results['confidence'][key]):
                 hist_data.append(key)
         fig, ax = plt.subplots()
-        ax.hist(hist_data, bins=[0.35, 0.45, 0.55, 0.65, 0.75, 0.85, 0.95, 1.0],
+        ax.hist(hist_data, bins=[0.35, 0.4, 0.45, 0.5, 0.55, 0.6, 0.65, 0.7, 0.75, 0.8, 0.85, 0.9, 0.95, 1.0],
                 color='#005aa9')
         ax.set_xlabel('confidence score')
         ax.set_ylabel('# of adversaries')
@@ -49,7 +50,8 @@ def plot(result_path, attack_data, mode):
         data_collector['adj_sorted'] = {k: v for k, v in sorted(adj.items(), key=lambda item: item[0],
                                                                 reverse=True)}
         # examples to check
-        for i in [item for sub_list in list(data_collector['adv_sorted'].values())[:10] for item in sub_list]:
+        for i in [item for sub_list in list(data_collector['adv_sorted'].values())[:10] for item in sub_list][:10]:
+            print('Adv: ', i)
             examples = [x['adversary'] for x in results['adversary_with_info'] if x['type'] == 'ADV'
                         and x['inserted'] == i]
             random.shuffle(examples)
@@ -59,19 +61,20 @@ def plot(result_path, attack_data, mode):
                 reading[i + '_adv'] = examples
 
         # examples to check
-        for i in [item for sub_list in list(data_collector['adj_sorted'].values())[:5] for item in sub_list]:
+        for i in [item for sub_list in list(data_collector['adj_sorted'].values())[:10] for item in sub_list][:10]:
+            print('Adj: ', i)
             examples = [x['adversary'] for x in results['adversary_with_info'] if x['type'] == 'ADJ'
                         and x['inserted'] == i]
             random.shuffle(examples)
             if len(examples) > 5:
-                reading[i + '_adv'] = examples[:5]
+                reading[i + '_adj'] = examples[:5]
             else:
-                reading[i + '_adv'] = examples
+                reading[i + '_adj'] = examples
 
         np.save(result_path.rsplit('/', 1)[0] + '/final_results.npy', data_collector, allow_pickle=True)
         np.save(result_path.rsplit('/', 1)[0] + '/reading.npy', reading, allow_pickle=True)
     if mode == 'T5':
-
+        print(result_path)
         # Analyze adversaries
         data_1 = {}
         for key in list(results['success']):
@@ -93,7 +96,8 @@ def plot(result_path, attack_data, mode):
         data_collector['adj_sorted'] = {k: v for k, v in sorted(adj.items(), key=lambda item: item[0],
                                                                 reverse=True)}
         # examples to check
-        for i in [item for sub_list in list(data_collector['adv_sorted'].values())[:10] for item in sub_list]:
+        for i in [item for sub_list in list(data_collector['adv_sorted'].values())[:10] for item in sub_list][:10]:
+            print('Adv: ', i)
             examples = [x['adversary'] for x in results['adversary_with_info'] if x['type'] == 'ADV'
                         and x['inserted'] == i]
             random.shuffle(examples)
@@ -103,22 +107,35 @@ def plot(result_path, attack_data, mode):
                 reading[i + '_adv'] = examples
 
         # examples to check
-        for i in [item for sub_list in list(data_collector['adj_sorted'].values())[:10] for item in sub_list]:
+        for i in [item for sub_list in list(data_collector['adj_sorted'].values())[:10] for item in sub_list][:10]:
+            print('Adj: ', i)
+
             examples = [x['adversary'] for x in results['adversary_with_info'] if x['type'] == 'ADJ'
                         and x['inserted'] == i]
             random.shuffle(examples)
             if len(examples) > 5:
-                reading[i + '_adv'] = examples[:5]
+                reading[i + '_adj'] = examples[:5]
             else:
-                reading[i + '_adv'] = examples
+                reading[i + '_adj'] = examples
 
         np.save(result_path.rsplit('/', 1)[0] + '/final_results.npy', data_collector, allow_pickle=True)
         np.save(result_path.rsplit('/', 1)[0] + '/reading.npy', reading, allow_pickle=True)
 
 
+plot('results/bert/seb/ua/attack_results.npy', 'results/bert/seb/ua/data.npy', 'bert')
+plot('results/bert/seb/uq/attack_results.npy', 'results/bert/seb/uq/data.npy', 'bert')
+plot('results/bert/seb/ud/attack_results.npy', 'results/bert/seb/ud/data.npy', 'bert')
+plot('results/bert/rte/attack_results.npy', 'results/bert/rte/data.npy', 'bert')
+plot('results/bert/wic/attack_results.npy', 'results/bert/wic/data.npy', 'bert')
+plot('results/bert/msrpc/attack_results.npy', 'results/bert/msrpc/data.npy', 'bert')
+"""
 plot('results/T5/seb/ua/attack_results.npy', 'results/T5/seb/ua/data.npy', 'T5')
 plot('results/T5/seb/uq/attack_results.npy', 'results/T5/seb/uq/data.npy', 'T5')
 plot('results/T5/seb/ud/attack_results.npy', 'results/T5/seb/ud/data.npy', 'T5')
 plot('results/T5/rte/attack_results.npy', 'results/T5/rte/data.npy', 'T5')
 plot('results/T5/wic/attack_results.npy', 'results/T5/wic/data.npy', 'T5')
 plot('results/T5/msrpc/attack_results.npy', 'results/T5/msrpc/data.npy', 'T5')
+"""
+plot('results/bert/mnli/matched/attack_results.npy', 'results/bert/mnli/matched/data.npy', 'bert')
+
+plot('results/bert/mnli/mismatched/attack_results.npy', 'results/bert/mnli/mismatched/data.npy', 'bert')
