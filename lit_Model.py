@@ -14,6 +14,8 @@ import warnings
 
 warnings.filterwarnings("ignore")
 
+# BERT model
+
 
 class LitBERT(pl.LightningModule):
 
@@ -117,6 +119,8 @@ class LitBERT(pl.LightningModule):
 
     def test_dataloader(self):
         return DataLoader(self.test_data, batch_size=1, num_workers=0, shuffle=False)
+
+# T5 model
 
 
 class LitT5(pl.LightningModule):

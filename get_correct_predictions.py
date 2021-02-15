@@ -6,11 +6,20 @@ import numpy as np
 import os
 
 
-def save_correct_incorrect_predictions(path, mode, label=0, testdata='', to_predict=''):
+def save_correct_incorrect_predictions(path, mode, label=0, testdata=''):
+    """
+    Find and save the correct predictions of a model on a test set of the most negative label
+    :param path: string / model path
+    :param mode: string / bert or t5 model
+    :param label: int or string / name of the label
+    :param testdata: string / path to preprocessed test data folder if test data not in checkpoint
+    :return:nothing
+    """
     data_collector = {}
     device = torch.device("cuda")
-    # Load checkpoint and get necessary objects
+
     if mode == 'bert':
+        # Load checkpoint and get necessary objects
         checkpoint = LitBERT.load_from_checkpoint(path)
         if len(testdata) > 0:
             test_set = MyBertDataset(testdata)
@@ -24,6 +33,7 @@ def save_correct_incorrect_predictions(path, mode, label=0, testdata='', to_pred
         data_collector['label'] = label
         data_collector['length'] = len(sub_set)
         dataload = DataLoader(sub_set, batch_size=checkpoint.hparams['batch_size'], shuffle=False)
+
         correct_guesses = []
         confidence = []
         with torch.no_grad():
@@ -47,15 +57,18 @@ def save_correct_incorrect_predictions(path, mode, label=0, testdata='', to_pred
             else:
                 np.save(where_to_save + '/other_data.npy', data_collector, allow_pickle=True)
     if mode == 'T5':
-        checkpoint = LitT5.load_from_checkpoint(path)
+        # wic has different preprocessing than the rest, needs different string splitting
         if path.find('wic') != -1:
             splitter = 3
         else:
             splitter = 2
+        # Load checkpoint and necessary data
+        checkpoint = LitT5.load_from_checkpoint(path)
         if len(testdata) > 0:
             test_set = MyT5Dataset(testdata)
         else:
             test_set = checkpoint.test_data
+
         model = checkpoint.model
         model.cuda()
         model.eval()
@@ -65,6 +78,7 @@ def save_correct_incorrect_predictions(path, mode, label=0, testdata='', to_pred
         data_collector['label'] = label
         data_collector['length'] = len(sub_set)
         dataload = DataLoader(sub_set, batch_size=checkpoint.hparams['batch_size'], shuffle=False)
+
         correct_guesses = []
         with torch.no_grad():
             for i in dataload:
@@ -90,6 +104,7 @@ def save_correct_incorrect_predictions(path, mode, label=0, testdata='', to_pred
             print(data_collector['accuracy'])
             where_to_save = 'results/' + path.split('/')[1].split('_')[1] + '/' + path.split('/')[1].split('_')[0]
             os.makedirs(where_to_save, exist_ok=True)
+            # careful not to overwrite data TODO: more elegant data management
             if len(testdata) == 0:
                 np.save(where_to_save + '/original_data.npy', data_collector, allow_pickle=True)
             else:

@@ -6,6 +6,7 @@ import torch
 
 
 def testing(checkpoint, mode, test_dataloader=''):
+    # test the performance of a model
     if mode == 'bert':
         model = LitBERT.load_from_checkpoint(checkpoint)
     if mode == 'T5':

@@ -7,22 +7,40 @@ device = torch.device("cuda")
 
 
 def to_torch(x):
+    """
+    Prepares data for gpu
+    :param x: A torch array on cpu or numpy array
+    :return: torch tensor to gpu
+    """
     return torch.tensor(x).unsqueeze(0).to(device)
 
 
 def attack(path, attack_data, mode, goal=None, name='attack_results.npy'):
+    """
+    Executes attack on the BERT/T5 model with the prepared data and saves the results to a numpy file
+    :param path: string / path of the model
+    :param attack_data: string / path to prepared adversarial candidates
+    :param mode: string / specify if model is T5 or bert
+    :param goal: string or int / Name of the label adversarial examples should produce, based on model (int for bert,
+    string for T5)
+    :param name: string / name of the file the attack results should be saved to
+    :return: Nothing
+    """
     data = np.load(attack_data, allow_pickle=True).item()
     if mode == 'bert':
+        # Load model
         ckpt = LitBERT.load_from_checkpoint(path)
         model = ckpt.model
         model.cuda()
         model.eval()
+
         data_collector = {
             'confidence': {},
             'query': {},
             'success': {},
             'adversary_with_info': []
         }
+        # Set goal
         if goal is not None:
             goal = goal
         else:
@@ -30,6 +48,7 @@ def attack(path, attack_data, mode, goal=None, name='attack_results.npy'):
 
         with torch.no_grad():
             for i in tqdm.tqdm(range(len(data['data'])), desc='Attacking'):
+                # model prediction
                 data_instance = data['data'][i]
                 batch = data_instance['input']
                 result = model(input_ids=to_torch(batch.input_ids),
@@ -37,6 +56,7 @@ def attack(path, attack_data, mode, goal=None, name='attack_results.npy'):
                                attention_mask=to_torch(batch.attention_mask))
                 data_collector['query'][data_instance['original']] = \
                     data_collector['query'].get(data_instance['original'], 0) + 1
+                # prediction should be goal
                 if torch.argmax(result.logits).to('cpu').item() == goal:
                     # collect all the data
                     data_collector['success'][data_instance['original']] = \
@@ -52,15 +72,18 @@ def attack(path, attack_data, mode, goal=None, name='attack_results.npy'):
         np.save(attack_data.rsplit('/', 1)[0] + '/' + name, data_collector, allow_pickle=True)
 
     if mode == 'T5':
+        # Load model
         ckpt = LitT5.load_from_checkpoint(path)
         model = ckpt.model
         model.cuda()
         model.eval()
+
         data_collector = {
             'query': {},
             'success': {},
             'adversary_with_info': []
         }
+        # Set goal
         if goal is not None:
             goal = goal
         else:
@@ -68,6 +91,7 @@ def attack(path, attack_data, mode, goal=None, name='attack_results.npy'):
 
         with torch.no_grad():
             for i in tqdm.tqdm(range(len(data['data'])), desc='Attacking'):
+                # model prediction
                 data_instance = data['data'][i]
                 batch = data_instance['input']
                 result = ckpt.tokenizer.decode(model.generate(input_ids=to_torch(batch.input_ids),
@@ -75,6 +99,7 @@ def attack(path, attack_data, mode, goal=None, name='attack_results.npy'):
                                                skip_special_tokens=True)
                 data_collector['query'][data_instance['original']] = \
                     data_collector['query'].get(data_instance['original'], 0) + 1
+                # prediction should be goal
                 if result == goal:
                     # collect all the data
                     data_collector['success'][data_instance['original']] = \

@@ -2,6 +2,11 @@ import numpy as np
 
 
 def analyze(path):
+    """
+    Prints the results of an attack on a model / test set combination
+    :param path: string / folder path containing attack results
+    :return: None
+    """
     correct = np.load(path + '/data.npy', allow_pickle=True).item()
     attack = np.load(path + '/attack_data.npy', allow_pickle=True).item()
     attack_results = np.load(path + '/attack_results.npy', allow_pickle=True).item()

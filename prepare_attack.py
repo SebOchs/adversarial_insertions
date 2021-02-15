@@ -10,8 +10,15 @@ nlp = spacy.load('en_core_web_sm')
 
 
 
-def prepare_attack(data_path, mode, name='attack_data'):
-
+def prepare_attack(data_path, mode, name='attack_data', top_adv_adj='top_adjectives_adverbs.npy'):
+    """
+    create adversarial candidates to attack the model
+    :param data_path: string / path to the correct incorrect predictions
+    :param mode: string / bert or T5
+    :param name: string / name of the file containing the adversarial candidates
+    :param top_adv_adj: string / name of the file containing top adverbs and adjectives
+    :return: nothing
+    """
 
 
     def insert_word(word, x, j, tokenizer, ref_answer, btw=''):
@@ -37,7 +44,7 @@ def prepare_attack(data_path, mode, name='attack_data'):
 
 
     # Load adj and adv
-    words = np.load("top_adjectives_adverbs.npy", allow_pickle=True)
+    words = np.load(top_adv_adj, allow_pickle=True)
     adverbs = words.item()['ADV']
     adjectives = words.item()['ADJ']
 

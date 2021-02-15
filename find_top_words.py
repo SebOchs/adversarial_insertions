@@ -3,6 +3,12 @@ import numpy as np
 
 
 def find_top_k_words_with_tag(k, tag):
+    """
+    Finds k top pos tagged words in the BROWN corpus based on bigrams
+    :param k: int / number of top words
+    :param tag: string / universal pos tag
+    :return: list of strings
+    """
     stop_words = nltk.corpus.stopwords.words('english')
     bigrams = nltk.bigrams((x[0].lower(), x[1]) for x in nltk.corpus.brown.tagged_words(tagset='universal'))
     # Filter bigrams
@@ -23,6 +29,14 @@ def find_top_k_words_with_tag(k, tag):
 
 
 def best_words_percentile(words, percentage=0.7):
+    """
+    LEGACY from bachelor thesis project / finds best performing adjectives and adverbs during the attack
+    based on percentile
+    :param words: dict of strings as keys, ints as values / adjectives/adverbs are keys, values are number of adv.
+    examples found on dev set inserting the specific adj/adv
+    :param percentage: float / btw. 0 and 1, specifies percentile for top performing words
+    :return: list of strings / best adv/adj of the attack in the given percentile
+    """
     words = sorted(words.items(), key=lambda item: item[1], reverse=True)
     overall_sum = np.sum([x[1] for x in words])
     best = []
@@ -40,11 +54,11 @@ def main():
     top_adjectives = find_top_k_words_with_tag(100, 'ADJ')
     top_adverbs = find_top_k_words_with_tag(100, 'ADV')
 
-    words = {}
-    words['ADJ'] = top_adjectives
-    words['ADV'] = top_adverbs
+    words = {'ADJ': top_adjectives, 'ADV': top_adverbs}
     np.save("top_adjectives_adverbs.npy", words)
+
     """
+    not needed in this project, but maybe future work
     adj_res = np.load('adj_result.npy', allow_pickle=True).item()
     adv_res = np.load('adv_result.npy', allow_pickle=True).item()
     best_adjectives = best_words_percentile(adj_res)

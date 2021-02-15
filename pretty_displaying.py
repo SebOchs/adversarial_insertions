@@ -3,12 +3,17 @@ import random
 
 
 def pretty(path):
+    # just a function to display reading examples
     data = np.load(path, allow_pickle=True).item()
     display = []
     for key, value in data.items():
         for i in value:
             display.append(key + i)
-    print(random.choice(display))
+    # print(random.choice(display))
+    """
+    for i in display:
+        print(i)
+    """
     """
     random.shuffle(xd)
     for i in xd[:10]:
@@ -16,4 +21,4 @@ def pretty(path):
     """
 
 
-pretty('results/bert/rte/reading.npy')
+pretty('results/T5/msrpc/reading.npy')

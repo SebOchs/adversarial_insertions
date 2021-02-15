@@ -5,12 +5,18 @@ import random
 
 
 def plot(result_path, attack_data, mode):
+    """
+    Plots the confidence histogram of the adversarial examples and draws the reading examples
+    :param result_path: string / path to the attack results
+    :param attack_data: string / path to the correct incorrect prediction data
+    :param mode: string / either bert or T5
+    :return: nothing
+    """
     results = np.load(result_path, allow_pickle=True).item()
     data = np.load(attack_data, allow_pickle=True).item()
     reading = {}
     data_collector = {}
     if mode == 'bert':
-        print(result_path)
         # histogram
         hist_data = []
         for key in list(results['confidence'].keys()):
@@ -29,7 +35,7 @@ def plot(result_path, attack_data, mode):
         plt.savefig(result_path.rsplit('/', 1)[0] + '/confidence.png', dpi=300)
         ax.clear()
         fig.clear()
-        # Analyze adversaries
+        # Analyze adversaries and get reading examples of top performing adv/adj
         data_1 = {}
         for key in list(results['success']):
             data_1[key] = results['success'][key] / results['query'][key]
@@ -49,9 +55,9 @@ def plot(result_path, attack_data, mode):
             adj[val].append(key)
         data_collector['adj_sorted'] = {k: v for k, v in sorted(adj.items(), key=lambda item: item[0],
                                                                 reverse=True)}
-        # examples to check
+        # examples to check for adverbs
         for i in [item for sub_list in list(data_collector['adv_sorted'].values())[:10] for item in sub_list][:10]:
-            print('Adv: ', i)
+            # print('Adv: ', i)
             examples = [x['adversary'] for x in results['adversary_with_info'] if x['type'] == 'ADV'
                         and x['inserted'] == i]
             random.shuffle(examples)
@@ -60,9 +66,9 @@ def plot(result_path, attack_data, mode):
             else:
                 reading[i + '_adv'] = examples
 
-        # examples to check
+        # examples to check for adjectives
         for i in [item for sub_list in list(data_collector['adj_sorted'].values())[:10] for item in sub_list][:10]:
-            print('Adj: ', i)
+            # print('Adj: ', i)
             examples = [x['adversary'] for x in results['adversary_with_info'] if x['type'] == 'ADJ'
                         and x['inserted'] == i]
             random.shuffle(examples)
@@ -74,7 +80,7 @@ def plot(result_path, attack_data, mode):
         np.save(result_path.rsplit('/', 1)[0] + '/final_results.npy', data_collector, allow_pickle=True)
         np.save(result_path.rsplit('/', 1)[0] + '/reading.npy', reading, allow_pickle=True)
     if mode == 'T5':
-        print(result_path)
+        # print(result_path)
         # Analyze adversaries
         data_1 = {}
         for key in list(results['success']):
@@ -95,7 +101,7 @@ def plot(result_path, attack_data, mode):
             adj[val].append(key)
         data_collector['adj_sorted'] = {k: v for k, v in sorted(adj.items(), key=lambda item: item[0],
                                                                 reverse=True)}
-        # examples to check
+        # examples to check for adverbs
         for i in [item for sub_list in list(data_collector['adv_sorted'].values())[:10] for item in sub_list][:10]:
             print('Adv: ', i)
             examples = [x['adversary'] for x in results['adversary_with_info'] if x['type'] == 'ADV'
@@ -106,7 +112,7 @@ def plot(result_path, attack_data, mode):
             else:
                 reading[i + '_adv'] = examples
 
-        # examples to check
+        # examples to check for adjectives
         for i in [item for sub_list in list(data_collector['adj_sorted'].values())[:10] for item in sub_list][:10]:
             print('Adj: ', i)
 

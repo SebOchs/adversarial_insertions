@@ -10,6 +10,21 @@ from lit_Model import LitBERT, LitT5
 
 def training(data_set_name, training_set, test_set, mode, batch_size=8, lr=0.00002, precision=False, accumulate_grad=8,
              ddp=False, val='', labels=0):
+    """
+    training script for the models
+    :param data_set_name: string / name of data set
+    :param training_set: string / preprocessed train data
+    :param test_set: string / preprocessed test set
+    :param mode: string / model type
+    :param batch_size: int / training batch size
+    :param lr: float / learning rate for bert
+    :param precision: boolean / add 16 bit precision to trainer module
+    :param accumulate_grad: int / nr of gradients to accumulate
+    :param ddp: boolean / enables training on multiple gpu's
+    :param val: string / path to preprocessed val set, if it exists
+    :param labels: int / nr of labels for berts classification layer
+    :return: nothing
+    """
     checkpoint_callback = ModelCheckpoint(
         monitor="val_macro",
         mode="max",
