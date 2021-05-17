@@ -8,7 +8,8 @@ import jsonlines
 
 
 def save(file_path, data):
-    np.save(file_path + ".npy", np.array(data), allow_pickle=True)
+    os.makedirs(file_path.rsplit('/', 1)[0], exist_ok=True)
+    np.save(file_path, np.array(data, dtype=object), allow_pickle=True)
 
 
 def right_tokenizer(model):
@@ -218,15 +219,15 @@ preprocess_seb('datasets/raw/sciEntsBank_training', 'datasets/preprocessed/T5/se
 preprocess_seb('datasets/raw/sciEntsBank_testing/test-unseen-answers', 'datasets/preprocessed/T5/seb/test_ua', 'T5')
 preprocess_seb('datasets/raw/sciEntsBank_testing/test-unseen-domains', 'datasets/preprocessed/T5/seb/test_ud', 'T5')
 preprocess_seb('datasets/raw/sciEntsBank_testing/test-unseen-questions', 'datasets/preprocessed/T5/seb/test_uq', 'T5')
-
+"""
 # preprocess mnli for T5
-preprocess_mnli('datasets/raw/MNLI_matched/original/multinli_1.0_train.jsonl', 'datasets/preprocessed/T5/MNLI/train',
+preprocess_mnli('datasets/raw/MNLI_matched/original/multinli_1.0_train.jsonl', 'datasets/preprocessed/T5/MNLI/train.npy',
                 'T5')
 preprocess_mnli('datasets/raw/MNLI_matched/original/multinli_1.0_dev_matched.jsonl',
-                'datasets/preprocessed/T5/MNLI/dev_m', 'T5')
+                'datasets/preprocessed/T5/MNLI/dev_m.npy', 'T5')
 preprocess_mnli('datasets/raw/MNLI_matched/original/multinli_1.0_dev_mismatched.jsonl',
-                'datasets/preprocessed/T5/MNLI/dev_mm', 'T5')
-
+                'datasets/preprocessed/T5/MNLI/dev_mm.npy', 'T5')
+"""
 # preprocess msrpc for T5
 preprocess_MSpara('datasets/raw/MSpara/msr_paraphrase_train.txt', 'datasets/preprocessed/T5/MSpara/train', 'T5')
 preprocess_MSpara('datasets/raw/MSpara/msr_paraphrase_test.txt', 'datasets/preprocessed/T5/MSpara/test', 'T5')
@@ -241,7 +242,8 @@ preprocess_QQP('datasets/raw/QQP/dev.tsv', 'datasets/preprocessed/T5/qqp/dev', '
 # preprocess WiC for T5
 preprocess_wic('datasets/raw/WiC/train.jsonl', 'datasets/preprocessed/T5/wic/train', 'T5')
 preprocess_wic('datasets/raw/WiC/val.jsonl', 'datasets/preprocessed/T5/wic/dev', 'T5')
-"""
+
 # preprocess RTE for T5
 preprocess_RTE('datasets/raw/RTE/train.tsv', 'datasets/preprocessed/T5/RTE/train', 'T5')
 preprocess_RTE('datasets/raw/RTE/dev.tsv', 'datasets/preprocessed/T5/RTE/dev', 'T5')
+"""

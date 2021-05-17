@@ -6,7 +6,7 @@ import numpy as np
 import os
 
 
-def save_correct_incorrect_predictions(path, mode, label=0, testdata=''):
+def save_correct_incorrect_predictions(path, mode, label=0, testdata="", to_save="custom_correct_predictions"):
     """
     Find and save the correct predictions of a model on a test set of the most negative label
     :param path: string / model path
@@ -52,10 +52,10 @@ def save_correct_incorrect_predictions(path, mode, label=0, testdata=''):
             data_collector['accuracy'] = len(confidence) / len(sub_set)
             where_to_save = 'results/' + path.split('/')[1].split('_')[1] + '/' + path.split('/')[1].split('_')[0]
             os.makedirs(where_to_save, exist_ok=True)
-            if len(testdata) > 0:
-                np.save(where_to_save + '/original_data.npy', data_collector, allow_pickle=True)
+            if len(testdata) == 0:
+                np.save(where_to_save + '/correct_predictions.npy', data_collector, allow_pickle=True)
             else:
-                np.save(where_to_save + '/other_data.npy', data_collector, allow_pickle=True)
+                np.save(where_to_save + '/' + to_save, data_collector, allow_pickle=True)
     if mode == 'T5':
         # wic has different preprocessing than the rest, needs different string splitting
         if path.find('wic') != -1:
@@ -106,10 +106,9 @@ def save_correct_incorrect_predictions(path, mode, label=0, testdata=''):
             os.makedirs(where_to_save, exist_ok=True)
             # careful not to overwrite data TODO: more elegant data management
             if len(testdata) == 0:
-                np.save(where_to_save + '/original_data.npy', data_collector, allow_pickle=True)
+                np.save(where_to_save + '/correct_predictions.npy', data_collector, allow_pickle=True)
             else:
-                np.save(where_to_save + '/data.npy', data_collector, allow_pickle=True)
+                np.save(where_to_save + '/custom_correct_predictions.npy', data_collector, allow_pickle=True)
 
 
-save_correct_incorrect_predictions("models/mnli_bert_epoch=1-val_macro=0.8304.ckpt", 'bert',
-                                   testdata="datasets/preprocessed/bert/mnli/dev_m.npy")
+save_correct_incorrect_predictions("models/msrpc_bert_epoch=2-val_macro=0.8393.ckpt", 'bert')
