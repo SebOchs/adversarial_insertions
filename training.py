@@ -56,7 +56,7 @@ def training(data_set_name, training_set, test_set, mode, batch_size=8, lr=0.000
 
 
 training("mnli", "datasets/preprocessed/T5/MNLI/train.npy", "datasets/preprocessed/T5/MNLI/dev_m.npy", 'T5',
-         batch_size=2, accumulate_grad=4)
+         batch_size=8, accumulate_grad=4, ddp=True)
 """
 training("wic", "datasets/preprocessed/T5/wic/train.npy", "datasets/preprocessed/T5/wic/dev.npy", "T5",
           batch_size=8, accumulate_grad=2)
