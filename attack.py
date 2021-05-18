@@ -101,6 +101,7 @@ def attack(path, attack_data, mode, goal=None, name='attack_results.npy'):
                     data_collector['query'].get(data_instance['original'], 0) + 1
                 # prediction should be goal
                 if result == goal:
+                    print("success")
                     # collect all the data
                     data_collector['success'][data_instance['original']] = \
                         data_collector['success'].get(data_instance['original'], 0) + 1
