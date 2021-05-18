@@ -113,4 +113,7 @@ def attack(path, attack_data, mode, goal=None, name='attack_results.npy'):
         np.save(attack_data.rsplit('/', 1)[0] + '/' + name, data_collector, allow_pickle=True)
 
 
-attack("models/mnli_bert_epoch=1-val_macro=0.8304.ckpt", "results/bert/mnli/matched/attack_data.npy", 'bert', goal=2)
+attack("models/mnli_T5_epoch=0-val_macro=0.8107.ckpt", "results/T5/mnli/matched_attack_data.npy", 'T5',
+       goal='entailment', name='matched_attack_results')
+attack("models/mnli_T5_epoch=0-val_macro=0.8107.ckpt", "results/T5/mnli/mismatched_attack_data.npy", 'T5',
+       goal='entailment', name='mismatched_attack_results')
