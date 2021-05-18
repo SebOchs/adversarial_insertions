@@ -3,11 +3,10 @@ import numpy as np
 import spacy
 import tqdm
 from transformers import T5Tokenizer, BertTokenizer
+
 device = torch.device("cuda")
 
 nlp = spacy.load('en_core_web_sm')
-
-
 
 
 def prepare_attack(data_path, mode, name='attack_data', top_adv_adj='top_adjectives_adverbs.npy'):
@@ -19,7 +18,6 @@ def prepare_attack(data_path, mode, name='attack_data', top_adv_adj='top_adjecti
     :param top_adv_adj: string / name of the file containing top adverbs and adjectives
     :return: nothing
     """
-
 
     def insert_word(word, x, j, tokenizer, ref_answer, btw=''):
         """
@@ -42,7 +40,6 @@ def prepare_attack(data_path, mode, name='attack_data', top_adv_adj='top_adjecti
                                    max_length=128, padding='max_length')
         return new_tokens
 
-
     # Load adj and adv
     words = np.load(top_adv_adj, allow_pickle=True)
     adverbs = words.item()['ADV']
@@ -53,7 +50,6 @@ def prepare_attack(data_path, mode, name='attack_data', top_adv_adj='top_adjecti
         tokenizer = BertTokenizer.from_pretrained('bert-base-uncased')
         data = np.load(data_path, allow_pickle=True).item()
         attack_data = {"label": data['label'], 'data': []}
-
 
         for i in tqdm.tqdm(range(len(data['data'])), desc='Preparing attack data'):
 
@@ -86,7 +82,6 @@ def prepare_attack(data_path, mode, name='attack_data', top_adv_adj='top_adjecti
                         "insert_type": 'ADJ',
                         "confidence": confidence})
 
-
         np.save(data_path.rsplit('/', 1)[0] + '/' + name, attack_data, allow_pickle=True)
     if mode == 'T5':
 
@@ -112,7 +107,7 @@ def prepare_attack(data_path, mode, name='attack_data', top_adv_adj='top_adjecti
                         "original": ''.join(data['data'][i]),
                         "inserted": adverb,
                         "insert_type": 'ADV',
-                        })
+                    })
 
             for b in adj_idx:
                 for adjective in adjectives:
@@ -122,12 +117,10 @@ def prepare_attack(data_path, mode, name='attack_data', top_adv_adj='top_adjecti
                         "original": ''.join(data['data'][i]),
                         "inserted": adjective,
                         "insert_type": 'ADJ',
-                        })
+                    })
 
         np.save(data_path.rsplit('/', 1)[0] + '/' + name + '.npy', attack_data, allow_pickle=True)
 
 
-prepare_attack("results/bert/mnli/matched/data.npy", 'bert')
-
-
-
+prepare_attack("results/T5/MNLI/correct_predictions.npy", 'T5', name='matched_attack_data')
+prepare_attack("results/T5/MNLI/custom_correct_predictions.npy", 'T5', name='mismatched_attack_data')

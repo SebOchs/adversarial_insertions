@@ -111,4 +111,4 @@ def save_correct_incorrect_predictions(path, mode, label=0, testdata="", to_save
 
 
 save_correct_incorrect_predictions("models/mnli_T5_epoch=0-val_macro=0.8107.ckpt", 'T5', label='neutral',
-                                   testdata='datasets/preprocessed/T5/MNLI/dev_mm')
+                                   testdata='datasets/preprocessed/T5/MNLI/dev_mm.npy')
