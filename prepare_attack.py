@@ -122,5 +122,5 @@ def prepare_attack(data_path, mode, name='attack_data', top_adv_adj='top_adjecti
         np.save(data_path.rsplit('/', 1)[0] + '/' + name + '.npy', attack_data, allow_pickle=True)
 
 
-prepare_attack("results/T5/MNLI/correct_predictions.npy", 'T5', name='matched_attack_data')
-prepare_attack("results/T5/MNLI/custom_correct_predictions.npy", 'T5', name='mismatched_attack_data')
+prepare_attack("results/T5/mnli/correct_predictions.npy", 'T5', name='matched_attack_data')
+prepare_attack("results/T5/mnli/custom_correct_predictions.npy", 'T5', name='mismatched_attack_data')
