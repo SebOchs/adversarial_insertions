@@ -97,7 +97,6 @@ def save_correct_incorrect_predictions(path, mode, label=0, testdata="", to_save
                     correct_guesses.append([[split_input[x][0], split_input[x][1].split(':', 1)[0] + ':',
                                              split_input[x][1].split(':', 1)[1]] for x in range(len(split_input))])
 
-
             data_collector['data'] = [correct_guesses[x][y] for x in range(len(correct_guesses)) for y in
                                       range(len(correct_guesses[x]))]
             data_collector['accuracy'] = len(data_collector['data']) / len(sub_set)
@@ -111,4 +110,4 @@ def save_correct_incorrect_predictions(path, mode, label=0, testdata="", to_save
                 np.save(where_to_save + '/custom_correct_predictions.npy', data_collector, allow_pickle=True)
 
 
-save_correct_incorrect_predictions("models/msrpc_bert_epoch=2-val_macro=0.8393.ckpt", 'bert')
+save_correct_incorrect_predictions("models/mnli_T5_epoch=0-val_macro=0.8107.ckpt", 'T5')
