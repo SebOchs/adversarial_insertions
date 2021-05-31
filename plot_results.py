@@ -19,20 +19,38 @@ def plot(result_path, attack_data, mode):
     if mode == 'bert':
         # histogram
         hist_data = []
+        hist_2_data = data['confidences']
         for key in list(results['confidence'].keys()):
             for i in range(results['confidence'][key]):
                 hist_data.append(key)
+        # first plot
         fig, ax = plt.subplots()
-        ax.hist(hist_data, bins=[0.35, 0.4, 0.45, 0.5, 0.55, 0.6, 0.65, 0.7, 0.75, 0.8, 0.85, 0.9, 0.95, 1.0],
+        ax.hist(hist_data, bins=[0, 0.05, 0.1, 0.15, 0.2, 0.25, 0.3, 0.35, 0.4, 0.45, 0.5,
+                                 0.55, 0.6, 0.65, 0.7, 0.75, 0.8, 0.85, 0.9, 0.95, 1.0],
                 color='#005aa9')
-        ax.set_xlabel('confidence score')
-        ax.set_ylabel('# of adversaries')
+        ax.set_xlabel('Confidence score')
+        ax.set_ylabel('# of Adversarial Examples')
         if len(result_path.split('/')) > 4:
             title = ' '.join(result_path.split('/')[1:4])
         else:
             title = ' '.join(result_path.split('/')[1:3])
         ax.set_title(title)
-        plt.savefig(result_path.rsplit('/', 1)[0] + '/confidence.png', dpi=300)
+        plt.savefig(result_path.rsplit('/', 1)[0] + '/confidence_of_predictions_before_insertion.png', dpi=300)
+        ax.clear()
+        fig.clear()
+        # second plot
+        fig, ax = plt.subplots()
+        ax.hist(hist_2_data, bins=[0, 0.05, 0.1, 0.15, 0.2, 0.25, 0.3, 0.35, 0.4, 0.45, 0.5,
+                                 0.55, 0.6, 0.65, 0.7, 0.75, 0.8, 0.85, 0.9, 0.95, 1.0],
+                color='#005aa9')
+        ax.set_xlabel('Confidence score')
+        ax.set_ylabel('# of Data Instances')
+        if len(result_path.split('/')) > 4:
+            title = ' '.join(result_path.split('/')[1:4])
+        else:
+            title = ' '.join(result_path.split('/')[1:3])
+        ax.set_title(title)
+        plt.savefig(result_path.rsplit('/', 1)[0] + '/confidence_of_predictions.png', dpi=300)
         ax.clear()
         fig.clear()
         # Analyze adversaries and get reading examples of top performing adv/adj
@@ -127,13 +145,16 @@ def plot(result_path, attack_data, mode):
         np.save(result_path.rsplit('/', 1)[0] + '/final_results.npy', data_collector, allow_pickle=True)
         np.save(result_path.rsplit('/', 1)[0] + '/reading.npy', reading, allow_pickle=True)
 
-
-plot('results/bert/seb/ua/attack_results.npy', 'results/bert/seb/ua/data.npy', 'bert')
-plot('results/bert/seb/uq/attack_results.npy', 'results/bert/seb/uq/data.npy', 'bert')
-plot('results/bert/seb/ud/attack_results.npy', 'results/bert/seb/ud/data.npy', 'bert')
-plot('results/bert/rte/attack_results.npy', 'results/bert/rte/data.npy', 'bert')
-plot('results/bert/wic/attack_results.npy', 'results/bert/wic/data.npy', 'bert')
-plot('results/bert/msrpc/attack_results.npy', 'results/bert/msrpc/data.npy', 'bert')
+"""
+plot('results/bert/seb/ua/attack_results.npy', 'results/bert/seb/ua/correct_predictions.npy', 'bert')
+plot('results/bert/seb/uq/attack_results.npy', 'results/bert/seb/uq/correct_predictions.npy', 'bert')
+plot('results/bert/seb/ud/attack_results.npy', 'results/bert/seb/ud/correct_predictions.npy', 'bert')
+"""
+plot('results/bert/rte/attack_results.npy', 'results/bert/rte/custom_correct_predictions.npy', 'bert')
+plot('results/bert/wic/attack_results.npy', 'results/bert/wic/custom_correct_predictions.npy', 'bert')
+plot('results/bert/msrpc/attack_results.npy', 'results/bert/msrpc/custom_correct_predictions.npy', 'bert')
+plot('results/bert/mnli/matched/attack_results.npy', 'results/bert/mnli/matched/correct_predictions.npy', 'bert')
+plot('results/bert/mnli/mismatched/attack_results.npy', 'results/bert/mnli/mismatched/correct_predictions.npy', 'bert')
 """
 plot('results/T5/seb/ua/attack_results.npy', 'results/T5/seb/ua/data.npy', 'T5')
 plot('results/T5/seb/uq/attack_results.npy', 'results/T5/seb/uq/data.npy', 'T5')
@@ -141,7 +162,5 @@ plot('results/T5/seb/ud/attack_results.npy', 'results/T5/seb/ud/data.npy', 'T5')
 plot('results/T5/rte/attack_results.npy', 'results/T5/rte/data.npy', 'T5')
 plot('results/T5/wic/attack_results.npy', 'results/T5/wic/data.npy', 'T5')
 plot('results/T5/msrpc/attack_results.npy', 'results/T5/msrpc/data.npy', 'T5')
+plot('results/T5/mnli/mismatched_attack_results.npy', 'results/T5/mnli/custom_correct_predictions.npy', 'T5')
 """
-plot('results/bert/mnli/matched/attack_results.npy', 'results/bert/mnli/matched/data.npy', 'bert')
-
-plot('results/bert/mnli/mismatched/attack_results.npy', 'results/bert/mnli/mismatched/data.npy', 'bert')

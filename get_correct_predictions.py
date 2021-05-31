@@ -40,8 +40,8 @@ def save_correct_incorrect_predictions(path, mode, label=0, testdata="", to_save
             for i in dataload:
                 text, seg, att, lab = tuple(t.to(device) for t in i)
                 results = model(input_ids=text, token_type_ids=seg, attention_mask=att, labels=lab)
-                correct_guesses_idx = list((torch.argmax(results.logits, 1) == 0).nonzero().to('cpu').numpy().flatten())
-                confidence.append(torch.nn.functional.softmax(results.logits, 1)[:, label][correct_guesses_idx])
+                correct_guesses_idx = list((torch.argmax(results[1], 1) == 0).nonzero().to('cpu').numpy().flatten())
+                confidence.append(torch.nn.functional.softmax(results[1], 1)[:, label][correct_guesses_idx])
                 correct_guesses.append([tokenizer.decode(x).replace(tokenizer.cls_token, '')
                                        .split(tokenizer.sep_token)[:2] for x in i[0][correct_guesses_idx]])
 
@@ -50,6 +50,7 @@ def save_correct_incorrect_predictions(path, mode, label=0, testdata="", to_save
             confidence = list(torch.cat((confidence)).to('cpu').numpy())
             data_collector['data'] = list(zip(correct_guesses, confidence))
             data_collector['accuracy'] = len(confidence) / len(sub_set)
+            data_collector['confidences'] = [x.item() for x in confidence]
             where_to_save = 'results/' + path.split('/')[1].split('_')[1] + '/' + path.split('/')[1].split('_')[0]
             os.makedirs(where_to_save, exist_ok=True)
             if len(testdata) == 0:
@@ -109,6 +110,20 @@ def save_correct_incorrect_predictions(path, mode, label=0, testdata="", to_save
             else:
                 np.save(where_to_save + '/custom_correct_predictions.npy', data_collector, allow_pickle=True)
 
-
-save_correct_incorrect_predictions("models/mnli_T5_epoch=0-val_macro=0.8107.ckpt", 'T5', label='neutral',
-                                   testdata='datasets/preprocessed/T5/MNLI/dev_mm.npy')
+"""
+save_correct_incorrect_predictions("models/seb_bert_epoch=2-val_macro=0.7489.ckpt", 'bert', label=0)
+save_correct_incorrect_predictions("models/seb_bert_epoch=2-val_macro=0.7489.ckpt", 'bert', label=0,
+                                   testdata='datasets/preprocessed/bert/seb/test_uq.npy', to_save='uq')
+save_correct_incorrect_predictions("models/seb_bert_epoch=2-val_macro=0.7489.ckpt", 'bert', label=0,
+                                   testdata='datasets/preprocessed/bert/seb/test_ud.npy', to_save='ud')
+save_correct_incorrect_predictions("models/mnli_bert_epoch=1-val_macro=0.8304.ckpt", "bert", label=0,
+                                   testdata='datasets/preprocessed/bert/mnli/dev_m.npy', to_save='matched')
+save_correct_incorrect_predictions("models/mnli_bert_epoch=1-val_macro=0.8304.ckpt", "bert", label=0,
+                                   testdata='datasets/preprocessed/bert/mnli/dev_mm.npy', to_save='mismatched')
+"""
+save_correct_incorrect_predictions("models/msrpc_bert_epoch=2-val_macro=0.8393.ckpt", "bert", label=0,
+                                   testdata='datasets/preprocessed/bert/msrpc/test.npy')
+save_correct_incorrect_predictions("models/rte_bert_epoch=5-val_macro=0.6986.ckpt", "bert", label=0,
+                                   testdata='datasets/preprocessed/bert/rte/dev.npy')
+save_correct_incorrect_predictions("models/wic_bert_epoch=2-val_macro=0.8066.ckpt", "bert", label=0,
+                                   testdata='datasets/preprocessed/bert/wic/dev.npy')
