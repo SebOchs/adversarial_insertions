@@ -24,57 +24,35 @@ def plot(result_path, attack_data, mode):
                     'original_sent1': sent1,
                     'original_sent2': sent2,
                     'adversarial_sent2': adversary,
-                    'inserted': i['inserted']
+                    'inserted': i['inserted'],
+                    'type': i['type']
                 })
         if mode == 'T5':
             for i in results:
                 if i['original'].startswith('mnli:'):
                     sent1, sent2 = tuple(i['original'].split('mnli: premise:')[1].split('hypothesis:'))
                     adversary = i['adversary'].split('hypothesis:')[1].replace('</s>', '').strip()
-                    examples.append({
-                        'original_sent1': sent1,
-                        'original_sent2': sent2,
-                        'adversarial_sent2': adversary,
-                        'inserted': i['inserted']
-                    })
                 elif i['original'].startswith('msrpc:'):
                     sent1, sent2 = tuple(i['original'].split('msrpc: sentence:')[1].split('paraphrase:'))
                     adversary = i['adversary'].split('paraphrase:')[1].replace('</s>', '').strip()
-                    examples.append({
-                        'original_sent1': sent1,
-                        'original_sent2': sent2,
-                        'adversarial_sent2': adversary,
-                        'inserted': i['inserted']
-                    })
                 elif i['original'].startswith('rte:'):
                     sent1, sent2 = tuple(i['original'].split('rte: reference:')[1].split('answer:'))
                     adversary = i['adversary'].split('answer:')[1].replace('</s>', '').strip()
-                    examples.append({
-                        'original_sent1': sent1,
-                        'original_sent2': sent2,
-                        'adversarial_sent2': adversary,
-                        'inserted': i['inserted']
-                    })
                 elif i['original'].startswith('asag:'):
                     sent1, sent2 = tuple(i['original'].split('asag: reference:')[1].split('student:'))
                     adversary = i['adversary'].split('student:')[1].replace('</s>', '').strip()
-                    examples.append({
-                        'original_sent1': sent1,
-                        'original_sent2': sent2,
-                        'adversarial_sent2': adversary,
-                        'inserted': i['inserted']
-                    })
                 elif i['original'].startswith('wic:'):
                     sent1, sent2 = tuple(i['original'].split('first:')[1].split('second'))
                     adversary = i['adversary'].split('second')[1].replace('</s>', '').strip()
-                    examples.append({
-                        'original_sent1': sent1,
-                        'original_sent2': sent2,
-                        'adversarial_sent2': adversary,
-                        'inserted': i['inserted']
-                    })
                 else:
                     raise ValueError('Not implemented for the current dataset.')
+                examples.append({
+                    'original_sent1': sent1,
+                    'original_sent2': sent2,
+                    'adversarial_sent2': adversary,
+                    'inserted': i['inserted'],
+                    'type': i['type']
+                })
 
         return examples
     results = np.load(result_path, allow_pickle=True).item()
@@ -162,7 +140,7 @@ def plot(result_path, attack_data, mode):
                 reading[i + '_adj'] = get_reading_ex(examples)
 
         np.save(result_path.rsplit('/', 1)[0] + '/final_results.npy', data_collector, allow_pickle=True)
-        np.save(result_path.rsplit('/', 1)[0] + '/reading.npy', reading, allow_pickle=True)
+        np.save(result_path.rsplit('/', 1)[0] + '/bert_reading.npy', reading, allow_pickle=True)
     if mode == 'T5':
         # print(result_path)
         # Analyze adversaries
@@ -208,11 +186,11 @@ def plot(result_path, attack_data, mode):
                 reading[i + '_adj'] = get_reading_ex(examples)
 
         np.save(result_path.rsplit('/', 1)[0] + '/final_results.npy', data_collector, allow_pickle=True)
-        np.save(result_path.rsplit('/', 1)[0] + '/reading.npy', reading, allow_pickle=True)
+        np.save(result_path.rsplit('/', 1)[0] + '/t5_reading.npy', reading, allow_pickle=True)
 
 
 # bert
-"""
+
 plot('results/bert/mnli/matched/attack_results.npy', 'results/bert/mnli/matched/correct_predictions.npy', 'bert')
 plot('results/bert/mnli/mismatched/attack_results.npy', 'results/bert/mnli/mismatched/correct_predictions.npy', 'bert')
 plot('results/bert/msrpc/attack_results.npy', 'results/bert/msrpc/custom_correct_predictions.npy', 'bert')
@@ -221,17 +199,16 @@ plot('results/bert/seb/ua/attack_results.npy', 'results/bert/seb/ua/correct_pred
 plot('results/bert/seb/uq/attack_results.npy', 'results/bert/seb/uq/correct_predictions.npy', 'bert')
 plot('results/bert/seb/ud/attack_results.npy', 'results/bert/seb/ud/correct_predictions.npy', 'bert')
 plot('results/bert/wic/attack_results.npy', 'results/bert/wic/custom_correct_predictions.npy', 'bert')
-"""
+
 # T5
 plot('results/T5/mnli/matched/matched_attack_results.npy', 'results/T5/mnli/matched/correct_predictions.npy', 'T5')
 plot('results/T5/mnli/mismatched/mismatched_attack_results.npy', 'results/T5/mnli/mismatched/custom_correct_predictions.npy', 'T5')
-"""
 plot('results/T5/msrpc/attack_results.npy', 'results/T5/msrpc/data.npy', 'T5')
 plot('results/T5/rte/attack_results.npy', 'results/T5/rte/data.npy', 'T5')
 plot('results/T5/seb/ua/attack_results.npy', 'results/T5/seb/ua/data.npy', 'T5')
 plot('results/T5/seb/uq/attack_results.npy', 'results/T5/seb/uq/data.npy', 'T5')
 plot('results/T5/seb/ud/attack_results.npy', 'results/T5/seb/ud/data.npy', 'T5')
 plot('results/T5/wic/attack_results.npy', 'results/T5/wic/data.npy', 'T5')
-"""
+
 
 
