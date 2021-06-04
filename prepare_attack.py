@@ -32,7 +32,7 @@ def prepare_attack(data_path, mode, name='attack_data', top_adv_adj='top_adjecti
         if j > 0:
             adversarial_ans = x[:j].text + ' ' + word + ' ' + x[j:].text
         else:
-            adversarial_ans = word + x.text
+            adversarial_ans = word + ' ' + x.text
         if mode == 'bert':
             new_tokens = tokenizer(ref_answer, adversarial_ans, max_length=128, padding='max_length')
         if mode == 'T5':
