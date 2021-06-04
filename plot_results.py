@@ -212,7 +212,7 @@ def plot(result_path, attack_data, mode):
 
 
 # bert
-
+"""
 plot('results/bert/mnli/matched/attack_results.npy', 'results/bert/mnli/matched/correct_predictions.npy', 'bert')
 plot('results/bert/mnli/mismatched/attack_results.npy', 'results/bert/mnli/mismatched/correct_predictions.npy', 'bert')
 plot('results/bert/msrpc/attack_results.npy', 'results/bert/msrpc/custom_correct_predictions.npy', 'bert')
@@ -221,15 +221,17 @@ plot('results/bert/seb/ua/attack_results.npy', 'results/bert/seb/ua/correct_pred
 plot('results/bert/seb/uq/attack_results.npy', 'results/bert/seb/uq/correct_predictions.npy', 'bert')
 plot('results/bert/seb/ud/attack_results.npy', 'results/bert/seb/ud/correct_predictions.npy', 'bert')
 plot('results/bert/wic/attack_results.npy', 'results/bert/wic/custom_correct_predictions.npy', 'bert')
-
+"""
 # T5
-plot('results/T5/mnli/matched_attack_results.npy', 'results/T5/mnli/correct_predictions.npy', 'T5')
-plot('results/T5/mnli/mismatched_attack_results.npy', 'results/T5/mnli/custom_correct_predictions.npy', 'T5')
+plot('results/T5/mnli/matched/matched_attack_results.npy', 'results/T5/mnli/matched/correct_predictions.npy', 'T5')
+plot('results/T5/mnli/mismatched/mismatched_attack_results.npy', 'results/T5/mnli/mismatched/custom_correct_predictions.npy', 'T5')
+"""
 plot('results/T5/msrpc/attack_results.npy', 'results/T5/msrpc/data.npy', 'T5')
 plot('results/T5/rte/attack_results.npy', 'results/T5/rte/data.npy', 'T5')
 plot('results/T5/seb/ua/attack_results.npy', 'results/T5/seb/ua/data.npy', 'T5')
 plot('results/T5/seb/uq/attack_results.npy', 'results/T5/seb/uq/data.npy', 'T5')
 plot('results/T5/seb/ud/attack_results.npy', 'results/T5/seb/ud/data.npy', 'T5')
 plot('results/T5/wic/attack_results.npy', 'results/T5/wic/data.npy', 'T5')
+"""
 
 
