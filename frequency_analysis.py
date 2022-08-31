@@ -1,108 +1,142 @@
-import nltk
+import spacy
 import numpy as np
+from collections import defaultdict
 import jsonlines
 import csv
 import os
 import xml.etree.ElementTree as et
+from tqdm import tqdm
+import pandas as pd
 
-def analysis(train_set, reading, data_set_name, second_only=False):
+
+def analysis(train_set, bert_attack_results, t5_attack_results, data_set_name):
     """
-    Analyzes the occurences of adverbs and adjectives in the training data depending on class
-    :param dataset: string / name of data set folder to preprocessed data set
-    :param results: string / name of result folder of the attack, contains top performing adv/adj
-    :param mode: string / 'bert' or 'T5', based on what adverbs/adjectives should be analyzed
-    :return: nothing
+    Hypothesis testing and adv/adj frequency analysis
+    :param train_set: string / path to train set
+    :param bert_attack_data: string / path to attack results for bert from selected dataset
+    :param t5_attack_data: string / path to attack results for t5 from selected dataset
+    :param data_set_name: string / name of dataset
+    :return: None
     """
 
-    def create_csv(data, top_ten, csv_path):
-        with open(csv_path, 'w') as csv_file:
-            writer = csv.writer(csv_file, delimiter='\t')
-            labels = list(data.keys())
-            writer.writerow(['word'] + labels)
-            for idx in top_ten:
-                row = []
-                for label in labels:
-                    row.append(data[label][idx])
-                writer.writerow([idx] + row)
+    def load_and_preprocess_dataset(train, second_col, label_col, pos_label, neg_label, json=False):
+        if json:
+            df = pd.read_json(train_set, lines=True, encoding='utf-8')
+        else:
+            # load train set
+            df = pd.read_csv(train, sep='\t', encoding='utf-8', on_bad_lines='skip')
+        # separate into the two required labels
+        df_correct = df[df[label_col] == pos_label]
+        df_incorrect = df[df[label_col] == neg_label]
+        # preprocess the sentence that can be manipulated
+        preprocessed_correct = [nlp(x) for x in
+                                tqdm(df_correct[second_col].astype(
+                                    'str'))]
+        preprocessed_incorrect = [nlp(x) for x in
+                                  tqdm(df_incorrect[second_col].astype(
+                                      'str'))]
+        # look up adverbs and adjectives in the texts
+        adj_correct = [a for b in [[x.lower_ for x in y if x.pos_ == 'ADJ'] for y in preprocessed_correct] for a in b]
+        adv_correct = [a for b in [[x.lower_ for x in y if x.pos_ == 'ADV'] for y in preprocessed_correct] for a in b]
+        adj_incorrect = [a for b in [[x.lower_ for x in y if x.pos_ == 'ADJ'] for y in preprocessed_incorrect]
+                         for a in b]
+        adv_incorrect = [a for b in [[x.lower_ for x in y if x.pos_ == 'ADV'] for y in preprocessed_incorrect]
+                         for a in b]
+        return adj_correct, adv_correct, adj_incorrect, adv_incorrect
 
-    # Load most common adjectives and adverbs
-    read = np.load(reading, allow_pickle=True).item()
-    words = list(read.keys())
-    top_ten_adjectives = [x.split('_')[0] for x in words if x.split('_')[1] == 'adj']
-    top_ten_adverbs = [x.split('_')[0] for x in words if x.split('_')[1] == 'adv']
+    def build_and_save_data_frames(results, adj_cor, adv_cor, adj_incor, adv_incor):
+        # Find 50 most successful adjectives/adverbs
+        # first get successful set of insertions per afflicted original
+        succ_adv = [a for b in
+                         [list(
+                             set([x['inserted'] for x in results['adversary_with_info'] if x['original'] == key and
+                                  x['type'] == 'ADV'])) for key in list(results['success'].keys())]
+                         for a in b]
+        succ_adj = [a for b in
+                         [list(
+                             set([x['inserted'] for x in results['adversary_with_info'] if x['original'] == key and
+                                  x['type'] == 'ADJ'])) for key in list(results['success'].keys())]
+                         for a in b]
+        # get their counts and sort them to get top 50 adjectives / adverbs
+        top_adj, adj_count = np.unique(succ_adj, return_counts=True)
+        top_adv, adv_count = np.unique(succ_adv, return_counts=True)
+        top_50_adj = top_adj[np.argsort(-adj_count)][:50]
+        top_50_adv = top_adv[np.argsort(-adv_count)][:50]
+        # transform adj/adv occurences in the train set to default dict
+        correct_adv_dict = defaultdict(int,
+                                       {x[0]: int(x[1]) for x in np.array(np.unique(adv_cor, return_counts=True)).T})
+        incorrect_adv_dict = defaultdict(int, {x[0]: int(x[1]) for x in
+                                               np.array(np.unique(adv_incor, return_counts=True)).T})
+        correct_adj_dict = defaultdict(int,
+                                       {x[0]: int(x[1]) for x in np.array(np.unique(adj_cor, return_counts=True)).T})
+        incorrect_adj_dict = defaultdict(int, {x[0]: int(x[1]) for x in
+                                               np.array(np.unique(adj_incor, return_counts=True)).T})
+        adv_df = pd.DataFrame(data=[(x, correct_adv_dict[x], incorrect_adv_dict[x]) for x in top_50_adj],
+                              columns=['adv', 'correct_count', 'incorrect_count'])
+        adj_df = pd.DataFrame(data=[(x, correct_adj_dict[x], incorrect_adj_dict[x]) for x in top_50_adj],
+                              columns=['adj', 'correct_count', 'incorrect_count'])
+        return adv_df, adj_df
 
-    # determine needed column indices
+    nlp = spacy.load("en_core_web_lg", disable=['ner', 'parser', 'lemmatizer', 'tok2vec'])
+
+    # Load attack results
+    bert_results = np.load(bert_attack_results, allow_pickle=True).item()
+    t5_results = np.load(t5_attack_results, allow_pickle=True).item()
+
     if data_set_name == 'mnli':
-        label_idx = 11
-        text_idx = [8, 9]
-    if data_set_name == 'msrpc':
-        label_idx = 0
-        text_idx = [3, 4]
+        sent2_col, lab_col, pos_lab, neg_lab, json = "sentence2", "gold_label", "entailment", "neutral", False
+    if data_set_name == 'mrpc':
+        sent2_col, lab_col, pos_lab, neg_lab, json = "#2 String", "Quality", 1, 0, False
     if data_set_name == 'rte':
-        label_idx = 3
-        text_idx = [1, 2]
-
-    labels = []
-    sentences = []
+        sent2_col, lab_col, pos_lab, neg_lab, json = "hypothesis", "label", "entailment", "not_entailment", True
     if data_set_name == 'wic':
-        lines = jsonlines.open(train_set)
-        for line in lines:
-            labels.append(line['label'])
-            if second_only:
-                sentences.append(line['sentence2'])
-            else:
-                sentences.append(line['sentence1'] + ' ' + line['sentence2'])
-    elif data_set_name == 'seb':
-        for file in os.listdir(train_set):
-            root = et.parse(train_set + '/' + file).getroot()
-            for ref_answer in root[1]:
-                for stud_answer in root[2]:
-                    labels.append(stud_answer.get('accuracy'))
-                    if second_only:
-                        sentences.append(stud_answer.text)
-                    else:
-                        sentences.append(ref_answer.text + ' ' + stud_answer.text)
+        sent2_col, lab_col, pos_lab, neg_lab, json = "sentence2", "label", True, False, True
     else:
-        # Read original training data
-        with open(train_set, "r", encoding='utf-8') as file:
-            # first line is skipped
-            next(file)
-            for line in file:
-                date = line.strip().split('\t')
-                labels.append(date[label_idx])
-                text = ''
-                if second_only:
-                    sentences.append(date[text_idx[1]])
-                else:
-                    for x in text_idx:
-                        text += date[x] + ' '
-                    sentences.append(text)
+        raise NotImplementedError("Not implemented yet.")
 
-    data = list(zip(sentences, labels))
-
-    collector_adj = {}
-    collector_adv = {}
-    for i in list(set(labels)):
-        tokens = nltk.word_tokenize(' '.join([x[0].lower() for x in data if x[1] == i]))
-        adverbs = nltk.FreqDist(x for x in tokens if x in top_ten_adverbs)
-        adjectives = nltk.FreqDist(x for x in tokens if x in top_ten_adjectives)
-        collector_adj[i] = adjectives
-        collector_adv[i] = adverbs
-
+    adj_cor, adv_cor, adj_incor, adv_incor = load_and_preprocess_dataset(train_set, sent2_col, lab_col, pos_lab,
+                                                                         neg_lab, json=json)
     # create csv's
-    if second_only:
-        create_csv(collector_adv, top_ten_adverbs, reading.rsplit('/', 1)[0] + '/second_only_adverbs.csv')
-        create_csv(collector_adj, top_ten_adjectives, reading.rsplit('/', 1)[0] + '/second_only_adjectives.csv')
-    else:
-        create_csv(collector_adv, top_ten_adverbs, reading.rsplit('/', 1)[0] + '/adverbs.csv')
-        create_csv(collector_adj, top_ten_adjectives, reading.rsplit('/', 1)[0] + '/adjectives.csv')
+    bert_adv, bert_adj = build_and_save_data_frames(bert_results, adj_cor, adv_cor, adj_incor, adv_incor)
+    t5_adv, t5_adj = build_and_save_data_frames(t5_results, adj_cor, adv_cor, adj_incor, adv_incor)
+
+    # save them
+    bert_adv.to_csv(os.path.join(bert_attack_results.rsplit('/', 1)[0], 'bert_adv.csv'))
+    bert_adj.to_csv(os.path.join(bert_attack_results.rsplit('/', 1)[0], 'bert_adj.csv'))
+    t5_adv.to_csv(os.path.join(t5_attack_results.rsplit('/', 1)[0], 't5_adv.csv'))
+    t5_adj.to_csv(os.path.join(t5_attack_results.rsplit('/', 1)[0], 't5_adj.csv'))
+
+if __name__ == '__main__':
+    # MNLI
+    """
+    analysis('datasets/raw/multinli_1.0/multinli_1.0_train.txt', 'results/bert/mnli/matched/attack_results.npy',
+             'results/T5/mnli/matched/matched_attack_results.npy', 'mnli')
+    analysis('datasets/raw/multinli_1.0/multinli_1.0_train.txt', 'results/bert/mnli/mismatched/attack_results.npy',
+             'results/T5/mnli/mismatched/mismatched_attack_results.npy', 'mnli')
+    """
+    # MRPC
+    """
+    analysis('datasets/raw/msrpc/msr_paraphrase_train.txt', 'results/bert/msrpc/attack_results.npy',
+             'results/T5/msrpc/attack_results.npy', 'mrpc')
+    """
+    # RTE
+    """
+    analysis('datasets/raw/rte/train.jsonl', 'results/bert/rte/attack_results.npy', 'results/T5/rte/attack_results.npy',
+             'rte')
+    """
+    # WiC
+    analysis('datasets/raw/wic/train.jsonl', 'results/bert/wic/attack_results.npy', 'results/T5/wic/attack_results.npy',
+             'wic')
+
+    # SEB
 
 
-analysis('datasets/raw/MNLI_matched/train.tsv', 'results/bert/mnli/matched/reading.npy', 'mnli', second_only=True)
-analysis('datasets/raw/MNLI_matched/train.tsv', 'results/bert/mnli/mismatched/reading.npy', 'mnli', second_only=True)
-analysis('datasets/raw/MSpara/msr_paraphrase_train.txt', 'results/bert/msrpc/reading.npy', 'msrpc', second_only=True)
-analysis('datasets/raw/RTE/train.tsv', 'results/bert/rte/reading.npy', 'rte', second_only=True)
-analysis('datasets/raw/WiC/train.jsonl', 'results/bert/wic/reading.npy', 'wic', second_only=True)
-analysis('datasets/raw/sciEntsBank_training', 'results/bert/seb/ua/reading.npy', 'seb', second_only=True)
-analysis('datasets/raw/sciEntsBank_training', 'results/bert/seb/ud/reading.npy', 'seb', second_only=True)
-analysis('datasets/raw/sciEntsBank_training', 'results/bert/seb/uq/reading.npy', 'seb', second_only=True)
+
+    """
+    analysis('datasets/raw/msrpc/msr_paraphrase_train.txt', 'results/bert/msrpc/reading.npy', 'mrpc')
+    analysis('datasets/raw/RTE/train.tsv', 'results/bert/rte/reading.npy', 'rte', second_only=True)
+    analysis('datasets/raw/WiC/train.jsonl', 'results/bert/wic/reading.npy', 'wic', second_only=True)
+    analysis('datasets/raw/sciEntsBank_training', 'results/bert/seb/ua/reading.npy', 'seb', second_only=True)
+    analysis('datasets/raw/sciEntsBank_training', 'results/bert/seb/ud/reading.npy', 'seb', second_only=True)
+    analysis('datasets/raw/sciEntsBank_training', 'results/bert/seb/uq/reading.npy', 'seb', second_only=True)
+    """
