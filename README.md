@@ -1,4 +1,4 @@
-# student_lab
+# Adversarial Insertions
 
 ## Short guide
 ### Install environment:
